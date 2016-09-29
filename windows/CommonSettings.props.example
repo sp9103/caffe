@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <ImportGroup Label="PropertySheets" />
     <PropertyGroup Label="UserMacros">
@@ -21,7 +21,7 @@
         <CudaArchitecture>compute_35,sm_35;compute_52,sm_52</CudaArchitecture>
 
         <!-- CuDNN 3 and 4 are supported -->
-        <CuDnnPath></CuDnnPath>
+        <CuDnnPath>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5\cudnn-7.0-win-x64-v4.0-prod</CuDnnPath>
         <ScriptsDir>$(SolutionDir)\scripts</ScriptsDir>
     </PropertyGroup>
     <PropertyGroup Condition="'$(CpuOnlyBuild)'=='false'">
