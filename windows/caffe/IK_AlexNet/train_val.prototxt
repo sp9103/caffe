@@ -36,7 +36,7 @@ layer {
   }
 }
 layer {
-  name: "rgb"
+  name: "conv1"
   type: "Convolution"
   bottom: "rgb"
   top: "conv1"
@@ -258,10 +258,188 @@ layer {
     stride: 2
   }
 }
+
+#################################
+layer {
+  name: "depth_conv1"
+  type: "Convolution"
+  bottom: "depth"
+  top: "depth_conv1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    kernel_size: 11
+    stride: 4
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  name: "depth_bn1"
+  type: "BatchNorm"
+  bottom: "depth_conv1"
+  top: "depth_conv1"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
+  name: "depth_relu1"
+  type: "ReLU"
+  bottom: "depth_conv1"
+  top: "depth_conv1"
+}
+layer {
+  name: "depth_pool1"
+  type: "Pooling"
+  bottom: "depth_conv1"
+  top: "depth_pool1"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "depth_conv2"
+  type: "Convolution"
+  bottom: "depth_pool1"
+  top: "depth_conv2"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 86
+    pad: 2
+    kernel_size: 5
+    group: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+layer {
+  name: "depth_bn2"
+  type: "BatchNorm"
+  bottom: "depth_conv2"
+  top: "depth_conv2"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
+  name: "depth_relu2"
+  type: "ReLU"
+  bottom: "depth_conv2"
+  top: "depth_conv2"
+}
+layer {
+  name: "depth_pool2"
+  type: "Pooling"
+  bottom: "depth_conv2"
+  top: "depth_pool2"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "depth_conv3"
+  type: "Convolution"
+  bottom: "depth_pool2"
+  top: "depth_conv3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  name: "depth_bn3"
+  type: "BatchNorm"
+  bottom: "depth_conv3"
+  top: "depth_conv3"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
+  name: "depth_relu3"
+  type: "ReLU"
+  bottom: "depth_conv3"
+  top: "depth_conv3"
+}
+#################################
+
+layer{
+  name: "depth_concat"
+  type : "DepthConcat"
+  bottom : "pool5"
+  bottom : "depth_conv3"
+  top : "depthconcat"
+}
 layer {
   name: "fc6_IK"
   type: "InnerProduct"
-  bottom: "pool5"
+  bottom: "depthconcat"
   top: "fc6"
   param {
     lr_mult: 1

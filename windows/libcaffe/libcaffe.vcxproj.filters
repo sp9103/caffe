@@ -345,6 +345,9 @@
     <ClCompile Include="..\..\src\caffe\layers\euclidean_dist_layer.cpp">
       <Filter>src\layers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\caffe\layers\depth_concat_layer.cpp">
+      <Filter>src\layers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\caffe\proto\caffe.pb.h">
@@ -656,6 +659,9 @@
     <ClInclude Include="..\..\include\caffe\layers\euclidean_dist_layer.hpp">
       <Filter>include\layers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\caffe\layers\depth_concat_layer.hpp">
+      <Filter>include\layers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\src\caffe\layers\contrastive_loss_layer.cu">
@@ -830,6 +836,9 @@
       <Filter>cu\solvers</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\src\caffe\layers\spatial_softmax_layer.cu">
+      <Filter>cu\layers</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\src\caffe\layers\depth_concat_layer.cu">
       <Filter>cu\layers</Filter>
     </CudaCompile>
   </ItemGroup>
