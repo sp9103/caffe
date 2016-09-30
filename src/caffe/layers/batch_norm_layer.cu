@@ -25,7 +25,7 @@ namespace caffe {
 				0 : 1 / this->blobs_[2]->cpu_data()[0];
 			caffe_gpu_scale(variance_.count(), scale_factor,
 				this->blobs_[0]->gpu_data(), mean_.mutable_gpu_data());
-			caffe_gpu_scale(variance_.count(), scale_factor, a
+			caffe_gpu_scale(variance_.count(), scale_factor, 
 				this->blobs_[1]->gpu_data(), variance_.mutable_gpu_data());
 		}
 		else {
