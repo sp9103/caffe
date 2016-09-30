@@ -13,7 +13,7 @@ layer {
     channels: 3
     height : 160
     width : 160
-    data_path : "L:/IK_data/TRAIN"
+    data_path : "M:/IK_data/TRAIN"
   }
 }
 layer {
@@ -30,7 +30,7 @@ layer {
     channels: 3
     height : 160
     width : 160
-    data_path : "L:/IK_data/TRAIN"
+    data_path : "M:/IK_data/TRAIN"
     data_limit : 2000
 
   }
@@ -393,7 +393,7 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 128
+    num_output: 85
     pad: 1
     kernel_size: 3
     weight_filler {
@@ -427,13 +427,24 @@ layer {
   bottom: "depth_conv3"
   top: "depth_conv3"
 }
+layer {
+  name: "depth_pool5"
+  type: "Pooling"
+  bottom: "depth_conv3"
+  top: "depth_pool3"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
 #################################
 
 layer{
   name: "depth_concat"
   type : "DepthConcat"
   bottom : "pool5"
-  bottom : "depth_conv3"
+  bottom : "depth_pool3"
   top : "depthconcat"
 }
 layer {
