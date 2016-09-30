@@ -18,15 +18,6 @@ void EuclideanLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   caffe_gpu_dot(count, diff_.gpu_data(), diff_.gpu_data(), &dot);
   Dtype loss = dot / bottom[0]->num() / Dtype(2);
   top[0]->mutable_cpu_data()[0] = loss;
-
-  ///////////////////////////////////
-  //Dtype temp[9], temp2[9];
-  //int batch_size = bottom[0]->shape()[0];
-  //for (int i = 0; i < 10; i++){
-	 // cudaMemcpy(temp, &bottom[0]->gpu_data()[i * 9], sizeof(Dtype) * 9, cudaMemcpyDeviceToHost);
-	 // cudaMemcpy(temp2, &bottom[1]->gpu_data()[i * 9], sizeof(Dtype) * 9, cudaMemcpyDeviceToHost);
-  //}
-  //////////////////////////////////
 }
 
 template <typename Dtype>
