@@ -34,9 +34,6 @@ namespace caffe {
 		// Figure out the dimensions
 		const int axis = bottom[0]->CanonicalAxisIndex(
 			this->layer_param_.spatial_param().axis());
-		const int new_K = bottom[0]->count(axis);
-		CHECK_EQ(K_, new_K)
-			<< "Input size incompatible with inner product parameters.";
 		// The first "axis" dimensions are independent inner products; the total
 		// number of these is M_, the product over these dimensions.
 		M_ = bottom[0]->count(0, axis);
