@@ -9,7 +9,7 @@ layer {
     phase: TRAIN
   }
   sp_unsupervised_data_param {
-    batch_size: 300
+    batch_size: 500
     channels: 3
     height : 160
     width : 160
@@ -26,12 +26,12 @@ layer {
     phase: TEST
   }
   sp_unsupervised_data_param {
-    batch_size: 30
+    batch_size: 500
     channels: 3
     height : 160
     width : 160
     data_path : "M:/IK_data/TRAIN"
-    data_limit : 2000
+    #data_limit : 2000
 
   }
 }
@@ -288,30 +288,26 @@ layer {
   }
 }
 layer {
-  name: "depth_bn1"
-  type: "BatchNorm"
-  bottom: "depth_conv1"
-  top: "depth_conv1"
-  param {
-    lr_mult: 0
-  }
-  param {
-    lr_mult: 0
-  }
-  param {
-    lr_mult: 0
-  }
-}
-layer {
   name: "depth_relu1"
   type: "ReLU"
   bottom: "depth_conv1"
   top: "depth_conv1"
 }
 layer {
+  name: "depth_norm1"
+  type: "LRN"
+  bottom: "depth_conv1"
+  top: "depth_norm1"
+  lrn_param {
+    local_size: 5
+    alpha: 0.0001
+    beta: 0.75
+  }
+}
+layer {
   name: "depth_pool1"
   type: "Pooling"
-  bottom: "depth_conv1"
+  bottom: "depth_norm1"
   top: "depth_pool1"
   pooling_param {
     pool: MAX
@@ -348,30 +344,26 @@ layer {
   }
 }
 layer {
-  name: "depth_bn2"
-  type: "BatchNorm"
-  bottom: "depth_conv2"
-  top: "depth_conv2"
-  param {
-    lr_mult: 0
-  }
-  param {
-    lr_mult: 0
-  }
-  param {
-    lr_mult: 0
-  }
-}
-layer {
   name: "depth_relu2"
   type: "ReLU"
   bottom: "depth_conv2"
   top: "depth_conv2"
 }
 layer {
+  name: "depth_norm2"
+  type: "LRN"
+  bottom: "depth_conv2"
+  top: "depth_norm2"
+  lrn_param {
+    local_size: 5
+    alpha: 0.0001
+    beta: 0.75
+  }
+}
+layer {
   name: "depth_pool2"
   type: "Pooling"
-  bottom: "depth_conv2"
+  bottom: "depth_norm2"
   top: "depth_pool2"
   pooling_param {
     pool: MAX
@@ -407,28 +399,13 @@ layer {
   }
 }
 layer {
-  name: "depth_bn3"
-  type: "BatchNorm"
-  bottom: "depth_conv3"
-  top: "depth_conv3"
-  param {
-    lr_mult: 0
-  }
-  param {
-    lr_mult: 0
-  }
-  param {
-    lr_mult: 0
-  }
-}
-layer {
   name: "depth_relu3"
   type: "ReLU"
   bottom: "depth_conv3"
   top: "depth_conv3"
 }
 layer {
-  name: "depth_pool5"
+  name: "depth_pool3"
   type: "Pooling"
   bottom: "depth_conv3"
   top: "depth_pool3"
@@ -473,7 +450,7 @@ layer {
   }
 }
 layer {
-  name: "bn1"
+  name: "bn6"
   type: "BatchNorm"
   bottom: "fc6"
   top: "fc6"
@@ -519,7 +496,7 @@ layer {
   }
 }
 layer {
-  name: "bn2"
+  name: "bn7"
   type: "BatchNorm"
   bottom: "fc7"
   top: "fc7"
@@ -565,7 +542,7 @@ layer {
   }
 }
 layer {
-  name: "bn3"
+  name: "bn8"
   type: "BatchNorm"
   bottom: "fc8"
   top: "fc8"
