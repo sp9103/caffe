@@ -391,7 +391,7 @@ int main(int argc, char** argv) {
 	/////////////////////////////////////////////////////////////////IK_AlexNet//////////////////////////////////////////////////////////////////////////////////////////
 	int targc = 5;
 	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_AlexNet/solver.prototxt",
-		"--snapshot=IK_AlexNet/snapshot_without_bn/IK_AlexNet_iter_70000.solverstate", "--gpu=all" };
+		"--snapshot=IK_AlexNet/bvlc_alexnet.solverstate", "--gpu=all" };
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_spatial/solver_fc.prototxt",
 	//	"--weights=IK_spatial/vision_layer.caffemodel", "--gpu=all" };

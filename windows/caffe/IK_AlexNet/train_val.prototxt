@@ -63,26 +63,30 @@ layer {
   }
 }
 layer {
+  name: "bn1"
+  type: "BatchNorm"
+  bottom: "conv1"
+  top: "conv1"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
   name: "relu1"
   type: "ReLU"
   bottom: "conv1"
   top: "conv1"
 }
 layer {
-  name: "norm1"
-  type: "LRN"
-  bottom: "conv1"
-  top: "norm1"
-  lrn_param {
-    local_size: 5
-    alpha: 0.0001
-    beta: 0.75
-  }
-}
-layer {
   name: "pool1"
   type: "Pooling"
-  bottom: "norm1"
+  bottom: "conv1"
   top: "pool1"
   pooling_param {
     pool: MAX
@@ -119,26 +123,30 @@ layer {
   }
 }
 layer {
+  name: "bn2"
+  type: "BatchNorm"
+  bottom: "conv2"
+  top: "conv2"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
   name: "relu2"
   type: "ReLU"
   bottom: "conv2"
   top: "conv2"
 }
 layer {
-  name: "norm2"
-  type: "LRN"
-  bottom: "conv2"
-  top: "norm2"
-  lrn_param {
-    local_size: 5
-    alpha: 0.0001
-    beta: 0.75
-  }
-}
-layer {
   name: "pool2"
   type: "Pooling"
-  bottom: "norm2"
+  bottom: "conv2"
   top: "pool2"
   pooling_param {
     pool: MAX
@@ -171,6 +179,21 @@ layer {
       type: "constant"
       value: 0
     }
+  }
+}
+layer {
+  name: "bn3"
+  type: "BatchNorm"
+  bottom: "conv3"
+  top: "conv3"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
   }
 }
 layer {
@@ -208,6 +231,21 @@ layer {
   }
 }
 layer {
+  name: "bn4"
+  type: "BatchNorm"
+  bottom: "conv4"
+  top: "conv4"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
   name: "relu4"
   type: "ReLU"
   bottom: "conv4"
@@ -239,6 +277,21 @@ layer {
       type: "constant"
       value: 0.1
     }
+  }
+}
+layer {
+  name: "bn5"
+  type: "BatchNorm"
+  bottom: "conv5"
+  top: "conv5"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
   }
 }
 layer {
@@ -288,26 +341,30 @@ layer {
   }
 }
 layer {
+  name: "depth_bn1"
+  type: "BatchNorm"
+  bottom: "depth_conv1"
+  top: "depth_conv1"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
   name: "depth_relu1"
   type: "ReLU"
   bottom: "depth_conv1"
   top: "depth_conv1"
 }
 layer {
-  name: "depth_norm1"
-  type: "LRN"
-  bottom: "depth_conv1"
-  top: "depth_norm1"
-  lrn_param {
-    local_size: 5
-    alpha: 0.0001
-    beta: 0.75
-  }
-}
-layer {
   name: "depth_pool1"
   type: "Pooling"
-  bottom: "depth_norm1"
+  bottom: "depth_conv1"
   top: "depth_pool1"
   pooling_param {
     pool: MAX
@@ -344,26 +401,30 @@ layer {
   }
 }
 layer {
+  name: "depth_bn2"
+  type: "BatchNorm"
+  bottom: "depth_conv2"
+  top: "depth_conv2"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+layer {
   name: "depth_relu2"
   type: "ReLU"
   bottom: "depth_conv2"
   top: "depth_conv2"
 }
 layer {
-  name: "depth_norm2"
-  type: "LRN"
-  bottom: "depth_conv2"
-  top: "depth_norm2"
-  lrn_param {
-    local_size: 5
-    alpha: 0.0001
-    beta: 0.75
-  }
-}
-layer {
   name: "depth_pool2"
   type: "Pooling"
-  bottom: "depth_norm2"
+  bottom: "depth_conv2"
   top: "depth_pool2"
   pooling_param {
     pool: MAX
@@ -396,6 +457,21 @@ layer {
       type: "constant"
       value: 0
     }
+  }
+}
+layer {
+  name: "depth_bn3"
+  type: "BatchNorm"
+  bottom: "depth_conv3"
+  top: "depth_conv3"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
   }
 }
 layer {
