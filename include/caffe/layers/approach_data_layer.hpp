@@ -1,11 +1,24 @@
 #ifndef CAFFE_APPROACH_DATA_LAYER_HPP_
 #define CAFFE_APPROACH_DATA_LAYER_HPP_
 
+#include <string>
+#include <utility>
 #include <vector>
+#include <list>
+#include <algorithm>
+
+#include <opencv2\opencv.hpp>
+#include <thread>
+#include <mutex>
 
 #include "caffe/blob.hpp"
+#include "caffe/data_reader.hpp"
+#include "caffe/data_transformer.hpp"
+#include "caffe/internal_thread.hpp"
 #include "caffe/layer.hpp"
+#include "caffe/layers/base_data_layer.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/util/db.hpp"
 
 namespace caffe {
 
@@ -49,7 +62,6 @@ namespace caffe {
 
 		void Approach_DataLoadAll(const char* datapath);
 		bool fileTypeCheck(char *fileName);
-		void makeRandbox(int *arr, int size);
 		void LoadFuc(int totalThread, int id);
 
 		int batch_size_, channels_, height_, width_, size_;

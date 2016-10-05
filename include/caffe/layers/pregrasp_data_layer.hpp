@@ -1,5 +1,5 @@
-#ifndef CAFFE_IK_DATA_LAYER_HPP_
-#define CAFFE_IK_DATA_LAYER_HPP_
+#ifndef CAFFE_PREGRASP_DATA_LAYER_HPP_
+#define CAFFE_PREGRASP_DATA_LAYER_HPP_
 
 #include <string>
 #include <utility>
@@ -23,14 +23,14 @@
 namespace caffe {
 
 	template <typename Dtype>
-	class IKDataLayer : public BaseDataLayer<Dtype> {
+	class PreGraspDataLayer : public BaseDataLayer<Dtype> {
 	public:
-		explicit IKDataLayer(const LayerParameter& param)
+		explicit PreGraspDataLayer(const LayerParameter& param)
 			: BaseDataLayer<Dtype>(param) {}
 		virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
 			const vector<Blob<Dtype>*>& top);
 
-		virtual inline const char* type() const { return "IKData"; }
+		virtual inline const char* type() const { return "PreGraspData"; }
 		virtual inline int ExactNumBottomBlobs() const { return 0; }
 
 		// Reset should accept const pointers, but can't, because the memory
@@ -45,6 +45,9 @@ namespace caffe {
 		int data_limit() { return data_limit_; }
 
 	protected:
+		virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+			const vector<Blob<Dtype>*>& top);
+
 		typedef struct path_{
 			std::string image_path;
 			std::string depth_path;
@@ -52,12 +55,11 @@ namespace caffe {
 			int id;
 		}FilePath;
 
-		virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-			const vector<Blob<Dtype>*>& top);
-
-		void IK_DataLoadAll(const char* datapath);
+		void PreGrasp_DataLoadAll(const char* datapath);
 		bool fileTypeCheck(char *fileName);
+		void makeRandbox(int *arr, int size);
 		void LoadFuc(int totalThread, int id);
+		bool comp(const FilePath& s1, const FilePath& s2);
 
 		int batch_size_, channels_, height_, width_, size_;
 		int n_;
@@ -84,4 +86,4 @@ namespace caffe {
 
 }  // namespace caffe
 
-#endif  // CAFFE_DATA_LAYER_HPP_
+#endif  // CAFFE_PREGRASP_DATA_LAYER_HPP_

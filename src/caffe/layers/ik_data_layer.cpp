@@ -15,8 +15,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#define SWAP(a,b,t) (t)=(a), (a)=(b), (b)=(t)
-
 namespace caffe {
 
 template <typename Dtype>
