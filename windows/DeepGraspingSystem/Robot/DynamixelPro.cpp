@@ -32,45 +32,31 @@ void DynamixelPro::Init(SerialPort port, int *id){
 }
 
 int DynamixelPro::TorqueOn(){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(char)*(NUM_JOINT*2));
-
+	int ErrorStatus;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*2] = (unsigned char)ID_list_[i];
-		t_param[i*2+1] = 1;
-	}
+		int Result = dxl_write_byte(Port_, ID_list_[i], PRO_TORQUE_ENABLE, 1, &ErrorStatus);
 
-	int Result = dxl_sync_write(Port_, PRO_TORQUE_ENABLE, 1, t_param, NUM_JOINT*2);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed DynamixelPro Enable!\n" );
-		free(t_param);
-		return -1;
+		if( Result != COMM_RXSUCCESS )
+		{
+			printf( "Failed DynamixelPro Enable!\n" );
+			return -1;
+		}
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int DynamixelPro::TorqueOff(){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(char)*(NUM_JOINT*2));
-
+	int ErrorStatus;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*2] = (unsigned char)ID_list_[i];
-		t_param[i*2+1] = 0;
-	}
+		int Result = dxl_write_byte(Port_, ID_list_[i], PRO_TORQUE_ENABLE, 0, &ErrorStatus);
 
-	int Result = dxl_sync_write(Port_, PRO_TORQUE_ENABLE, 1, t_param, NUM_JOINT*2);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed DynamixelPro Disable!\n" );
-		free(t_param);
-		return -1;
+		if( Result != COMM_RXSUCCESS )
+		{
+			printf( "Failed DynamixelPro Enable!\n" );
+			return -1;
+		}
 	}
-
-	free(t_param);
 
 	return 1;
 }
@@ -105,51 +91,27 @@ int DynamixelPro::GetTemperature(int *Temperature){
 }
 
 int DynamixelPro::isMoving(bool *ismove){
-	int tP_position[NUM_JOINT],tIsMovingLength = 1;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
+	int tP_position[NUM_JOINT];
 
+	int ErrorState;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(PRO_MOVING);
-		t_param[i*5+2] = DXL_HIBYTE(PRO_MOVING);
-		t_param[i*5+3] = DXL_LOBYTE(tIsMovingLength);
-		t_param[i*5+4] = DXL_HIBYTE(tIsMovingLength);
-	}
+		dxl_read_byte(Port_, ID_list_[i], PRO_PRESENT_POSITION, &tP_position[i], &ErrorState);
 
-	dxl_bulk_read(Port_, t_param, NUM_JOINT*5, pbd);
-
-	for(int i = 0; i < NUM_JOINT; i++){
-		dxl_get_bulk_byte(pbd, ID_list_[i], PRO_MOVING, &tP_position[i]);
 		printf("ID %d : %d\n", ID_list_[i], tP_position[i]);
-
 		if(ismove != NULL){
 			ismove[i] = tP_position[i] == 1 ? true : false;
 		}
 	}
 
-	free(t_param);
-
 	return 1;
 }
 
 int DynamixelPro::GetPresPosition(int *PresentPosition){
-	int tP_position[NUM_JOINT],tPosition_length = 4;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
+	int tP_position[NUM_JOINT];
 
+	int ErrorState;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(PRO_PRESENT_POSITION);
-		t_param[i*5+2] = DXL_HIBYTE(PRO_PRESENT_POSITION);
-		t_param[i*5+3] = DXL_LOBYTE(tPosition_length);
-		t_param[i*5+4] = DXL_HIBYTE(tPosition_length);
-	}
-
-	dxl_bulk_read(Port_, t_param, NUM_JOINT*5, pbd);
-
-	for(int i = 0; i < NUM_JOINT; i++){
-		dxl_get_bulk_dword(pbd, ID_list_[i], PRO_PRESENT_POSITION, (unsigned*)&tP_position[i]);
+		dxl_read_dword(Port_, ID_list_[i], PRO_PRESENT_POSITION, (unsigned*)&tP_position[i], &ErrorState);
 
 		if(PresentPosition != NULL){
 			PresentPosition[i] = tP_position[i];
@@ -157,189 +119,109 @@ int DynamixelPro::GetPresPosition(int *PresentPosition){
 			printf("ID %d : %d\n", ID_list_[i], tP_position[i]);
 	}
 
-	free(t_param);
-
 	return 1;
 }
 
 int DynamixelPro::GetGoalPosition(int *GoalPosition){
-	int tG_position[NUM_JOINT],tPosition_length = 4;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
+	int tG_position[NUM_JOINT];
 
+	int ErrorState;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(PRO_GOAL_POSITION);
-		t_param[i*5+2] = DXL_HIBYTE(PRO_GOAL_POSITION);
-		t_param[i*5+3] = DXL_LOBYTE(tPosition_length);
-		t_param[i*5+4] = DXL_HIBYTE(tPosition_length);
-	}
-
-	dxl_bulk_read(Port_, t_param, NUM_JOINT*5, pbd);
-
-	for(int i = 0; i < NUM_JOINT; i++){
-		dxl_get_bulk_dword(pbd, ID_list_[i], PRO_GOAL_POSITION, (unsigned*)&tG_position[i]);
+		dxl_read_dword(Port_, ID_list_[i], PRO_GOAL_POSITION, (unsigned*)&tG_position[i], &ErrorState);
 
 		if(GoalPosition != NULL){
 			GoalPosition[i] = tG_position[i];
 		}else
 			printf("ID %d : %d\n", ID_list_[i], tG_position[i]);
-
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int DynamixelPro::GetPresVelocity(int *PresentVelocity){
-	int tP_velocity[NUM_JOINT],tVelocity_length = 4;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
+	int tP_velocity[NUM_JOINT];
 
+	int ErrorState;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(PRO_PRESENT_VELOCITY);
-		t_param[i*5+2] = DXL_HIBYTE(PRO_PRESENT_VELOCITY);
-		t_param[i*5+3] = DXL_LOBYTE(tVelocity_length);
-		t_param[i*5+4] = DXL_HIBYTE(tVelocity_length);
-	}
-
-	dxl_bulk_read(Port_, t_param, NUM_JOINT*5, pbd);
-
-	for(int i = 0; i < NUM_JOINT; i++){
-		dxl_get_bulk_dword(pbd, ID_list_[i], PRO_PRESENT_VELOCITY, (unsigned*)&tP_velocity[i]);
+		dxl_read_dword(Port_, ID_list_[i], PRO_PRESENT_VELOCITY, (unsigned*)&tP_velocity[i], &ErrorState);
 
 		if(PresentVelocity != NULL){
 			PresentVelocity[i] = tP_velocity[i];
 		}else
 			printf("ID %d : %d\n", ID_list_[i], tP_velocity[i]);
-
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int DynamixelPro::GetGoalVelocity(int *GoalVelocity){
-	int tG_velocity[NUM_JOINT],tVelocity_length = 4;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
+	int tG_velocity[NUM_JOINT];
 
+	int ErrorState;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(PRO_GOAL_VELOCITY);
-		t_param[i*5+2] = DXL_HIBYTE(PRO_GOAL_VELOCITY);
-		t_param[i*5+3] = DXL_LOBYTE(tVelocity_length);
-		t_param[i*5+4] = DXL_HIBYTE(tVelocity_length);
-	}
-
-	dxl_bulk_read(Port_, t_param, NUM_JOINT*5, pbd);
-
-	for(int i = 0; i < NUM_JOINT; i++){
-		dxl_get_bulk_dword(pbd, ID_list_[i], PRO_GOAL_VELOCITY, (unsigned*)&tG_velocity[i]);
+		dxl_read_dword(Port_, ID_list_[i], PRO_GOAL_VELOCITY, (unsigned*)&tG_velocity[i], &ErrorState);
 
 		if(GoalVelocity != NULL){
 			GoalVelocity[i] = tG_velocity[i];
 		}else
 			printf("ID %d : %d\n", ID_list_[i], tG_velocity[i]);
-
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int DynamixelPro::SetGoalPosition(int *GoalPosition){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
-
+	int ErrorStatus;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(DXL_LOWORD(GoalPosition[i]));
-		t_param[i*5+2] = DXL_HIBYTE(DXL_LOWORD(GoalPosition[i]));
-		t_param[i*5+3] = DXL_LOBYTE(DXL_HIWORD(GoalPosition[i]));
-		t_param[i*5+4] = DXL_HIBYTE(DXL_HIWORD(GoalPosition[i]));
+		int Result = dxl_write_dword(Port_, ID_list_[i], PRO_GOAL_POSITION, GoalPosition[i], &ErrorStatus);
+
+		if( Result != COMM_RXSUCCESS )
+		{
+			printf( "Failed to set goal position!\n" );
+			return -1;
+		}
 	}
 
-	int Result = dxl_sync_write(Port_, PRO_GOAL_POSITION, 4, t_param, NUM_JOINT*5);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed to set goal position!\n" );
-		free(t_param);
-		return -1;
-	}
-
-	free(t_param);
 	return 1;
 }
 
 int DynamixelPro::SetGoalVelocity(int *GoalVelocity){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
-
+	int ErrorStatus;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(DXL_LOWORD(GoalVelocity[i]));
-		t_param[i*5+2] = DXL_HIBYTE(DXL_LOWORD(GoalVelocity[i]));
-		t_param[i*5+3] = DXL_LOBYTE(DXL_HIWORD(GoalVelocity[i]));
-		t_param[i*5+4] = DXL_HIBYTE(DXL_HIWORD(GoalVelocity[i]));
+		int Result = dxl_write_dword(Port_, ID_list_[i], PRO_GOAL_VELOCITY, GoalVelocity[i], &ErrorStatus);
+
+		if( Result != COMM_RXSUCCESS )
+		{
+			printf( "Failed to set goal Velocity!\n" );
+			return -1;
+		}
 	}
 
-	int Result = dxl_sync_write(Port_, PRO_GOAL_VELOCITY, 4, t_param, NUM_JOINT*5);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed to set goal position!\n" );
-		free(t_param);
-		return -1;
-	}
-
-	free(t_param);
 	return 1;
 }
 
 //RED LED
 int DynamixelPro::SetLED(unsigned char *LED){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*2));
-
+	int ErrorStatus;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*2] = ID_list_[i];
-		t_param[i*2+1] = LED[i];
-	}
+		int Result = dxl_write_byte(Port_, ID_list_[i], PRO_LED_RED, LED[i], &ErrorStatus);
 
-	int Result = dxl_sync_write(Port_, PRO_LED_RED, 1, t_param, NUM_JOINT*2);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed to change red LED!\n" );
-		free(t_param);
-		return -1;
+		if( Result != COMM_RXSUCCESS )
+		{
+			printf( "Failed to change red LED!\n" );
+			return -1;
+		}
 	}
-
-	free(t_param);
 	return 1;
+
 }
 
 int DynamixelPro::GetPresLoad(int *PresentLoad){
-	int tP_load[NUM_JOINT], tLoad_length = 2;
-	
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
+	int tP_load[NUM_JOINT];
 
+	int ErrorState;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(PRO_PRESENT_LOAD);
-		t_param[i*5+2] = DXL_HIBYTE(PRO_PRESENT_LOAD);
-		t_param[i*5+3] = DXL_LOBYTE(tLoad_length);
-		t_param[i*5+4] = DXL_HIBYTE(tLoad_length);
-	}
-
-	dxl_bulk_read(Port_, t_param, NUM_JOINT*5, pbd);
-
-	for(int i = 0; i < NUM_JOINT; i++){
-		dxl_get_bulk_word(pbd, ID_list_[i], PRO_PRESENT_LOAD, &tP_load[i]);
+		dxl_read_word(Port_, ID_list_[i], PRO_PRESENT_LOAD, &tP_load[i], &ErrorState);
 
 		if(PresentLoad != NULL){
 			PresentLoad[i] = tP_load[i];
@@ -348,39 +230,24 @@ int DynamixelPro::GetPresLoad(int *PresentLoad){
 		}
 	}
 
-	free(t_param);
-
 	return 1;
 }
 
 int DynamixelPro::GetPresCurrent(int *PresentCurrent){
-	int tP_current[NUM_JOINT], tCurrent_length = 2;
-	
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_JOINT*5));
+	int tP_current[NUM_JOINT];
 
+	int ErrorState;
 	for(int i = 0; i < NUM_JOINT; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(PRO_PRESENT_CURRENT);
-		t_param[i*5+2] = DXL_HIBYTE(PRO_PRESENT_CURRENT);
-		t_param[i*5+3] = DXL_LOBYTE(tCurrent_length);
-		t_param[i*5+4] = DXL_HIBYTE(tCurrent_length);
-	}
-
-	dxl_bulk_read(Port_, t_param, NUM_JOINT*5, pbd);
-
-	for(int i = 0; i < NUM_JOINT; i++){
-		dxl_get_bulk_word(pbd, ID_list_[i], PRO_PRESENT_CURRENT, &tP_current[i]);
+		dxl_read_word(Port_, ID_list_[i], PRO_PRESENT_CURRENT, &tP_current[i], &ErrorState);
 
 		if(PresentCurrent != NULL){
 			PresentCurrent[i] = tP_current[i];
 		}else{
-			printf("%d\t", (short)tP_current[i]);
+			printf("ID %d : %d\n", ID_list_[i], (short)tP_current[i]);
 		}
 	}
-	printf("\n");
 
-	free(t_param);
+	printf("\n");
 
 	return 1;
 }

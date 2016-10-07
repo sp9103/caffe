@@ -22,6 +22,8 @@ public:
 
 	int TorqueOn();
 	int TorqueOff();
+	void FingerTorqueOn();
+	void FingerTorqueOff();
 
 	int GetTemperature(int *Temperature = NULL);						//온도 받아오기
 	int GetPresPosition(int *PresentPosition = NULL);					//현재 위치 받아오기

@@ -304,3 +304,11 @@ void RobotArm::safeMovePose(int *goal){
 	jointcontroller_.SetGoalPosition(goal);
 	waitMove();
 }
+
+void RobotArm::FingerTorqueOn(){
+	fingercontroller_.TorqueOn();
+}
+
+void RobotArm::FingerTorqueOff(){
+	fingercontroller_.TorqueOff();
+}

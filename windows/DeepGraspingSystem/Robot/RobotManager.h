@@ -27,6 +27,10 @@ public:
 	void TorqueOn();
 	void TorqueOff();
 
+	void FingerTorqueOn();
+	void FingerTorqueOff();
+
+	void setVel(int* src);
 	void Move(int *pos);
 
 private:

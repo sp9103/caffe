@@ -32,44 +32,31 @@ void MX_controller::Init(SerialPort port, int *id){
 }
 
 int MX_controller::TorqueOn(){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(char)*(NUM_FINGER*2));
+	int ErrorStatus;
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*2] = (unsigned char)ID_list_[i];
-		t_param[i*2+1] = 1;
+	for (int i = 0; i < NUM_FINGER; i++){
+		int Result = dxl_write_byte(Port_, ID_list_[i], MX_TORQUE_ENABLE, 1, &ErrorStatus);
+		if (Result != COMM_RXSUCCESS)
+		{
+			printf("Failed MX Enable!\n");
+			return -1;
+		}
 	}
 
-	int Result = dxl_sync_write(Port_, MX_TORQUE_ENABLE, 1, t_param, NUM_FINGER*2);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed MX Enable!\n" );
-		free(t_param);
-		return -1;
-	}
-
-	free(t_param);
 	return 1;
 }
 
 int MX_controller::TorqueOff(){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(char)*(NUM_FINGER*2));
+	int ErrorStatus;
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*2] = (unsigned char)ID_list_[i];
-		t_param[i*2+1] = 0;
+	for (int i = 0; i < NUM_FINGER; i++){
+		int Result = dxl_write_byte(Port_, ID_list_[i], MX_TORQUE_ENABLE, 0, &ErrorStatus);
+		if (Result != COMM_RXSUCCESS)
+		{
+			printf("Failed MX Enable!\n");
+			return -1;
+		}
 	}
-
-	int Result = dxl_sync_write(Port_, MX_TORQUE_ENABLE, 1, t_param, NUM_FINGER*2);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed MX Disable!\n" );
-		free(t_param);
-		return -1;
-	}
-
-	free(t_param);
 	return 1;
 }
 
@@ -103,198 +90,114 @@ int MX_controller::GetTemperature(int *Temperature){
 }
 
 int MX_controller::isMoving(bool *ismove){
-	int tP_position[NUM_FINGER],tIsMovingLength = 1;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*5));
+	int tP_position[NUM_FINGER];
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(MX_MOVING);
-		t_param[i*5+2] = DXL_HIBYTE(MX_MOVING);
-		t_param[i*5+3] = DXL_LOBYTE(tIsMovingLength);
-		t_param[i*5+4] = DXL_HIBYTE(tIsMovingLength);
-	}
+	int ErrorState;
+	for (int i = 0; i < NUM_FINGER; i++){
+		dxl_read_byte(Port_, ID_list_[i], MX_MOVING, &tP_position[i], &ErrorState);
 
-	dxl_bulk_read(Port_, t_param, NUM_FINGER*5, pbd);
-
-	for(int i = 0; i < NUM_FINGER; i++){
-		dxl_get_bulk_byte(pbd, ID_list_[i], MX_MOVING, &tP_position[i]);
-
-		if(ismove != NULL){
+		printf("ID %d : %d\n", ID_list_[i], tP_position[i]);
+		if (ismove != NULL){
 			ismove[i] = tP_position[i] == 1 ? true : false;
-		}else
-			printf("ID %d : %d\n", ID_list_[i], tP_position[i]);
-
+		}
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int MX_controller::GetPresPosition(int *PresentPosition){
-	int tP_position[NUM_FINGER],tPosition_length = 2;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*5));
+	int tP_position[NUM_FINGER];
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(MX_PRESENT_POSITION);
-		t_param[i*5+2] = DXL_HIBYTE(MX_PRESENT_POSITION);
-		t_param[i*5+3] = DXL_LOBYTE(tPosition_length);
-		t_param[i*5+4] = DXL_HIBYTE(tPosition_length);
-	}
+	int ErrorState;
+	for (int i = 0; i < NUM_FINGER; i++){
+		dxl_read_word(Port_, ID_list_[i], MX_PRESENT_POSITION, &tP_position[i], &ErrorState);
 
-	dxl_bulk_read(Port_, t_param, NUM_FINGER*5, pbd);
-
-	for(int i = 0; i < NUM_FINGER; i++){
-		dxl_get_bulk_word(pbd, ID_list_[i], MX_PRESENT_POSITION, &tP_position[i]);
-
-		if(PresentPosition != NULL){
+		if (PresentPosition != NULL){
 			PresentPosition[i] = tP_position[i];
-		}else
+		}
+		else
 			printf("ID %d : %d\n", ID_list_[i], tP_position[i]);
-
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int MX_controller::GetGoalPosition(int *GoalPosition){
-	int tG_position[NUM_FINGER],tPosition_length = 2;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*5));
+	int tG_position[NUM_FINGER];
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(MX_GOAL_POSITION);
-		t_param[i*5+2] = DXL_HIBYTE(MX_GOAL_POSITION);
-		t_param[i*5+3] = DXL_LOBYTE(tPosition_length);
-		t_param[i*5+4] = DXL_HIBYTE(tPosition_length);
-	}
+	int ErrorState;
+	for (int i = 0; i < NUM_FINGER; i++){
+		dxl_read_word(Port_, ID_list_[i], MX_GOAL_POSITION, &tG_position[i], &ErrorState);
 
-	dxl_bulk_read(Port_, t_param, NUM_FINGER*5, pbd);
-
-	for(int i = 0; i < NUM_FINGER; i++){
-		dxl_get_bulk_word(pbd, ID_list_[i], MX_GOAL_POSITION, &tG_position[i]);
-
-		if(GoalPosition != NULL){
+		if (GoalPosition != NULL){
 			GoalPosition[i] = tG_position[i];
-		}else
+		}
+		else
 			printf("ID %d : %d\n", ID_list_[i], tG_position[i]);
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int MX_controller::GetPresVelocity(int *PresentVelocity){
-	int tP_velocity[NUM_FINGER],tVelocity_length = 2;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*5));
+	int tP_velocity[NUM_FINGER];
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(MX_PRESENT_SPEED);
-		t_param[i*5+2] = DXL_HIBYTE(MX_PRESENT_SPEED);
-		t_param[i*5+3] = DXL_LOBYTE(tVelocity_length);
-		t_param[i*5+4] = DXL_HIBYTE(tVelocity_length);
-	}
+	int ErrorState;
+	for (int i = 0; i < NUM_FINGER; i++){
+		dxl_read_word(Port_, ID_list_[i], MX_PRESENT_SPEED, &tP_velocity[i], &ErrorState);
 
-	dxl_bulk_read(Port_, t_param, NUM_FINGER*5, pbd);
-
-	for(int i = 0; i < NUM_FINGER; i++){
-		dxl_get_bulk_word(pbd, ID_list_[i], MX_PRESENT_SPEED, &tP_velocity[i]);
-
-		if(PresentVelocity != NULL){
+		if (PresentVelocity != NULL){
 			PresentVelocity[i] = tP_velocity[i];
-		}else
+		}
+		else
 			printf("ID %d : %d\n", ID_list_[i], tP_velocity[i]);
-
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int MX_controller::GetGoalVelocity(int *GoalVelocity){
-	int tG_velocity[NUM_FINGER],tVelocity_length = 2;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*5));
+	int tG_velocity[NUM_FINGER];
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(MX_MOVING_SPEED);
-		t_param[i*5+2] = DXL_HIBYTE(MX_MOVING_SPEED);
-		t_param[i*5+3] = DXL_LOBYTE(tVelocity_length);
-		t_param[i*5+4] = DXL_HIBYTE(tVelocity_length);
-	}
+	int ErrorState;
+	for (int i = 0; i < NUM_FINGER; i++){
+		dxl_read_word(Port_, ID_list_[i], MX_MOVING_SPEED, &tG_velocity[i], &ErrorState);
 
-	dxl_bulk_read(Port_, t_param, NUM_FINGER*5, pbd);
-
-	for(int i = 0; i < NUM_FINGER; i++){
-		dxl_get_bulk_word(pbd, ID_list_[i], MX_MOVING_SPEED, &tG_velocity[i]);
-
-		if(GoalVelocity != NULL){
+		if (GoalVelocity != NULL){
 			GoalVelocity[i] = tG_velocity[i];
-		}else
+		}
+		else
 			printf("ID %d : %d\n", ID_list_[i], tG_velocity[i]);
 	}
-
-	free(t_param);
 
 	return 1;
 }
 
 int MX_controller::SetGoalVelocity(int *GoalVelocity){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*3));
+	int ErrorStatus;
+	for (int i = 0; i < NUM_FINGER; i++){
+		int Result = dxl_write_word(Port_, ID_list_[i], MX_MOVING_SPEED, GoalVelocity[i], &ErrorStatus);
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*3] = (unsigned char)ID_list_[i];
-		t_param[i*3+1] = DXL_LOBYTE(DXL_LOWORD(GoalVelocity[i]));
-		t_param[i*3+2] = DXL_HIBYTE(DXL_LOWORD(GoalVelocity[i]));
-		/*t_param[i*5+3] = DXL_LOBYTE(DXL_HIWORD(GoalVelocity[i]));
-		t_param[i*5+4] = DXL_HIBYTE(DXL_HIWORD(GoalVelocity[i]));*/
+		if (Result != COMM_RXSUCCESS)
+		{
+			printf("Failed to set goal Velocity!\n");
+			return -1;
+		}
 	}
-
-	int Result = dxl_sync_write(Port_, MX_MOVING_SPEED, 2, t_param, NUM_FINGER*3);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed to set goal position!\n" );
-		free(t_param);
-		return -1;
-	}
-
-	free(t_param);
 	return 1;
 }
 
 int MX_controller::SetGoalPosition(int *GoalPosition){
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*3));
+	int ErrorStatus;
+	for (int i = 0; i < NUM_FINGER; i++){
+		int Result = dxl_write_word(Port_, ID_list_[i], MX_GOAL_POSITION, GoalPosition[i], &ErrorStatus);
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*3] = (unsigned char)ID_list_[i];
-		t_param[i*3+1] = DXL_LOBYTE(DXL_LOWORD(GoalPosition[i]));
-		t_param[i*3+2] = DXL_HIBYTE(DXL_LOWORD(GoalPosition[i]));
-		/*t_param[i*5+3] = DXL_LOBYTE(DXL_HIWORD(GoalPosition[i]));
-		t_param[i*5+4] = DXL_HIBYTE(DXL_HIWORD(GoalPosition[i]));*/
+		if (Result != COMM_RXSUCCESS)
+		{
+			printf("Failed to set goal position!\n");
+			return -1;
+		}
 	}
-
-	int Result = dxl_sync_write(Port_, MX_GOAL_POSITION, 2, t_param, NUM_FINGER*3);
-	if( Result != COMM_RXSUCCESS )
-	{
-		printf( "Failed to set goal position!\n" );
-		free(t_param);
-		return -1;
-	}
-
-	free(t_param);
 	return 1;
 }
 
@@ -321,35 +224,19 @@ int MX_controller::SetLED(unsigned char *LED){
 }
 
 int MX_controller::GetPresLoad(int *PresentLoad){
-	int tP_load[NUM_FINGER],tLoad_length = 2;
-	unsigned char *t_param;
-	t_param = (unsigned char*)malloc(sizeof(unsigned char)*(NUM_FINGER*5));
+	int tP_load[NUM_FINGER];
 
-	for(int i = 0; i < NUM_FINGER; i++){
-		t_param[i*5] = (unsigned char)ID_list_[i];
-		t_param[i*5+1] = DXL_LOBYTE(MX_PRESENT_LOAD);
-		t_param[i*5+2] = DXL_HIBYTE(MX_PRESENT_LOAD);
-		t_param[i*5+3] = DXL_LOBYTE(tLoad_length);
-		t_param[i*5+4] = DXL_HIBYTE(tLoad_length);
-	}
-	while(1){
-		dxl_bulk_read(Port_, t_param, NUM_FINGER*5, pbd);
+	int ErrorState;
+	for (int i = 0; i < NUM_FINGER; i++){
+		dxl_read_word(Port_, ID_list_[i], MX_PRESENT_LOAD, &tP_load[i], &ErrorState);
 
-		for(int i = 0; i < NUM_FINGER; i++){
-			dxl_get_bulk_word(pbd, ID_list_[i], MX_PRESENT_LOAD, &tP_load[i]);
-
-			if(PresentLoad != NULL){
-				PresentLoad[i] = tP_load[i];
-			}else
-				printf("ID %d : %d\n", ID_list_[i], tP_load[i]);
+		if (PresentLoad != NULL){
+			PresentLoad[i] = tP_load[i];
 		}
-
-		if(DataValidCheck(tP_load, 2048, 0) == 1)
-			break;
+		else{
+			printf("ID %d : %d\n", ID_list_[i], (short)tP_load[i]);
+		}
 	}
-
-	free(t_param);
-
 
 	return 1;
 }

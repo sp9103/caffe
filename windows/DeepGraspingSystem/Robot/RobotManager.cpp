@@ -19,7 +19,7 @@ RobotManager::~RobotManager()
 
 void RobotManager::ControllerInit(int PortNum, int BaudRateNum){
 	int robotid[] = { 1, 3, 5, 7, 9, 11, 13, 15, 17 };
-	int vel[] = { 3000, 3000, 3000, 3000, 3000, 3000, 50, 50, 50 };
+	int vel[] = { 1000, 1000, 1000, 1000, 1000, 1000, 50, 50, 50 };
 	arm.Init(PortNum, BaudRateNum, robotid);
 	arm.SetGoalVelocity(vel);
 }
@@ -52,9 +52,7 @@ bool RobotManager::robotConnectCheck(){
 	{
 		if (abs(angi[JointNum]) > robot.GetJointInfo(JointNum)->GetMaxAngleInValue() + 10)
 		{
-			cout << "read fail" << endl;
-			printf("Data Fail %d\n", angi[JointNum]);
-			return false;
+			printf("[%d] Data Fail %d\n", JointNum, angi[JointNum]);
 		}
 	}
 
@@ -134,4 +132,16 @@ void RobotManager::Approaching(int *pos){
 	
 	arm.SetFingerPosition(&pos[NUM_JOINT]);
 	arm.safeMovePose(pos);
+}
+
+void RobotManager::FingerTorqueOn(){
+	arm.FingerTorqueOn();
+}
+
+void RobotManager::FingerTorqueOff(){
+	arm.FingerTorqueOff();
+}
+
+void RobotManager::setVel(int* src){
+	arm.SetGoalVelocity(src);
 }
