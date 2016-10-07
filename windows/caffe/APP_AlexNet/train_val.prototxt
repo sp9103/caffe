@@ -1,7 +1,7 @@
 name: "APP_AlexNet"
 layer {
   name: "data"
-  type: "IKData"
+  type: "ApproachData"
   top: "rgb"
   top: "depth"
   top: "angle"
@@ -13,12 +13,12 @@ layer {
     channels: 3
     height : 160
     width : 160
-    data_path : "M:/IK_data/TRAIN"
+    data_path : "L:/Approach_new/ApproachData/TRAIN"
   }
 }
 layer {
   name: "data"
-  type: "IKData"
+  type: "ApproachData"
   top: "rgb"
   top: "depth"
   top: "angle"
@@ -30,7 +30,7 @@ layer {
     channels: 3
     height : 160
     width : 160
-    data_path : "M:/IK_data/TRAIN"
+    data_path : "L:/Approach_new/ApproachData/TRAIN"
     #data_limit : 2000
 
   }

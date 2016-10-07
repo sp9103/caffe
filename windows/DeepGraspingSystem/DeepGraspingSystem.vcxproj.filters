@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ARMSDK">
+      <UniqueIdentifier>{6465699f-71f6-42d1-bd2b-22694e5821be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Robot">
+      <UniqueIdentifier>{3c47f987-e3fa-4802-81e8-da08e16a3251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Kinect">
+      <UniqueIdentifier>{53a73e0d-91ac-4a00-83d1-aae0d3d7260e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HandTracker">
+      <UniqueIdentifier>{04780648-26a4-45b2-9df1-8fa6590558dc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ARMSDKsrc\ARMSDK_Math.cpp">
+      <Filter>ARMSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ARMSDKsrc\MotionEngine\JointData.cpp">
+      <Filter>ARMSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ARMSDKsrc\MotionEngine\Kinematics.cpp">
+      <Filter>ARMSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ARMSDKsrc\MotionEngine\MotionPlay.cpp">
+      <Filter>ARMSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ARMSDKsrc\MotionEngine\RobotInfo.cpp">
+      <Filter>ARMSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ARMSDKsrc\MotionEngine\TrajectoryGenerator.cpp">
+      <Filter>ARMSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ARMSDKsrc\Timer\MotionTimer.cpp">
+      <Filter>ARMSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinect\KinectConnecter.cpp">
+      <Filter>Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinect\KinectMangerThread.cpp">
+      <Filter>Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="HandTracker\MOGbasedTracker.cpp">
+      <Filter>HandTracker</Filter>
+    </ClCompile>
+    <ClCompile Include="HandTracker\BlobLabeling.cpp">
+      <Filter>HandTracker</Filter>
+    </ClCompile>
+    <ClCompile Include="Robot\RobotArm.cpp">
+      <Filter>Robot</Filter>
+    </ClCompile>
+    <ClCompile Include="Robot\RobotManager.cpp">
+      <Filter>Robot</Filter>
+    </ClCompile>
+    <ClCompile Include="Robot\DynamixelPro.cpp">
+      <Filter>Robot</Filter>
+    </ClCompile>
+    <ClCompile Include="Robot\MX_controller.cpp">
+      <Filter>Robot</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Kinect\KinectConnecter.h">
+      <Filter>Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinect\KinectMangerThread.h">
+      <Filter>Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="HandTracker\MOGbasedTracker.h">
+      <Filter>HandTracker</Filter>
+    </ClInclude>
+    <ClInclude Include="HandTracker\BlobLabeling.h">
+      <Filter>HandTracker</Filter>
+    </ClInclude>
+    <ClInclude Include="Robot\MX_controller.h">
+      <Filter>Robot</Filter>
+    </ClInclude>
+    <ClInclude Include="Robot\RobotArm.h">
+      <Filter>Robot</Filter>
+    </ClInclude>
+    <ClInclude Include="Robot\RobotManager.h">
+      <Filter>Robot</Filter>
+    </ClInclude>
+    <ClInclude Include="Robot\dynamixel.h">
+      <Filter>Robot</Filter>
+    </ClInclude>
+    <ClInclude Include="Robot\DynamixelPro.h">
+      <Filter>Robot</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

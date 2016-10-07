@@ -69,6 +69,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "upgrade_solver_proto_text",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CaffeRobotTest", "CaffeRobotTest\CaffeRobotTest.vcxproj", "{910A3D9A-B835-4663-AB8B-B41CE9B3EF7E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeepGraspingSystem", "DeepGraspingSystem\DeepGraspingSystem.vcxproj", "{237B76DE-CF7D-4689-AB04-E863E9D479B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -139,6 +141,10 @@ Global
 		{910A3D9A-B835-4663-AB8B-B41CE9B3EF7E}.Debug|x64.Build.0 = Debug|x64
 		{910A3D9A-B835-4663-AB8B-B41CE9B3EF7E}.Release|x64.ActiveCfg = Release|x64
 		{910A3D9A-B835-4663-AB8B-B41CE9B3EF7E}.Release|x64.Build.0 = Release|x64
+		{237B76DE-CF7D-4689-AB04-E863E9D479B0}.Debug|x64.ActiveCfg = Debug|x64
+		{237B76DE-CF7D-4689-AB04-E863E9D479B0}.Debug|x64.Build.0 = Debug|x64
+		{237B76DE-CF7D-4689-AB04-E863E9D479B0}.Release|x64.ActiveCfg = Release|x64
+		{237B76DE-CF7D-4689-AB04-E863E9D479B0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

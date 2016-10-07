@@ -5,8 +5,8 @@
 #include "ARMSDK\include\ARMSDK.h"
 #include "IK_Data_Loader.h"
 //#include "ListLoader.h"
-//#include "Approach_Data_Loader.h"
-#include "Pregrasp_Data_Loader.h"
+#include "Approach_Data_Loader.h"
+//#include "Pregrasp_Data_Loader.h"
 //#include "SimulatorControl.h"
 
 #define HEIGHT			160
@@ -489,10 +489,10 @@ int main(){
 	Blob<float> depthBlob(1, 1, HEIGHT, WIDTH);
 
 	//data load
-	/*Approach_Data_Loader dataLoader;
-	dataLoader.LoadDataAll("L:\\Approach_new\\ApproachData\\TRAIN");*/
-	Pregrasp_Data_Loader dataLoader;
-	dataLoader.LoadDataAll("L:\\Pregrasp0909\\TRAIN");
+	Approach_Data_Loader dataLoader;
+	dataLoader.LoadDataAll("L:\\Approach_new\\ApproachData\\TRAIN");
+	//Pregrasp_Data_Loader dataLoader;
+	//dataLoader.LoadDataAll("L:\\Pregrasp0909\\TRAIN");
 
 		//simulator ±¸µ¿
 	/*SimulatorControl simul;

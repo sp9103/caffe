@@ -396,11 +396,11 @@ int main(int argc, char** argv) {
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_spatial/solver_fc.prototxt",
 	//	"--weights=IK_spatial/vision_layer.caffemodel", "--gpu=all" };
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/*char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexNet/solver.prototxt",
-		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };*/
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Pregrasp_AlexNet/solver.prototxt",
+	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexNet/solver.prototxt",
 		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Pregrasp_AlexNet/solver.prototxt",
+	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 
 	char **argvp;
 	argvp = &targv[0];

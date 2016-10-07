@@ -36,11 +36,7 @@ namespace caffe {
 			" positive in memory_data_param";
 
 		top[0]->Reshape(batch_size_, channels_, height_, width_);					//[0] RGB
-		std::vector<int> depth_dim(3);
-		depth_dim[0] = batch_size_;
-		depth_dim[1] = height_;
-		depth_dim[2] = width_;
-		top[1]->Reshape(depth_dim);												//[1] Depth
+		top[1]->Reshape(batch_size_, 1, height_, width_);							//[1] Depth
 
 		std::vector<int> pos_dim(2);
 		pos_dim[0] = batch_size_;
@@ -229,7 +225,6 @@ namespace caffe {
 						FileList.push_back(tempPath);
 					}
 				}
-
 			}
 		}
 	}
