@@ -15,6 +15,7 @@ using namespace caffe;
 void resultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst);
 void rgbConvertCaffeType(cv::Mat src, cv::Mat *dst);
 void depthVis(cv::Mat src, char* windowName);
+int calcMaxDiff(int *src1, int*src2);
 
 int main(){
 	//0-1. Kinect Initialize
@@ -85,11 +86,7 @@ int main(){
 			getch();
 			robot.Approaching(robotMotion);
 			printf("if motion end, press any key\n");
-			robot.FingerTorqueOff();
 			getch();
-			robot.FingerTorqueOn();
-			int vel[] = { 1000, 1000, 1000, 1000, 1000, 1000, 50, 50, 50 };
-			robot.setVel(vel);
 
 			//Pregrasp
 			while (1){
@@ -101,7 +98,6 @@ int main(){
 
 				if (procImg.rows == 0) continue;
 
-				//depthVis(kinectDEPTHPregrasp, "depth pre");
 				depthVis(procDepth, "procDepth");
 				cv::imshow("procImg", procImg);
 				cv::waitKey(10);
@@ -112,12 +108,25 @@ int main(){
 				input_vec.push_back(&depthBlob);
 				const vector<Blob<float>*>& result_pregrasp = pregrasp_net.Forward(input_vec, &loss);
 				resultToRobotMotion(result_pregrasp, robotMotion);
+
+				int presntState[NUM_XEL];
+				robot.getPresState(presntState);
+				int maxdiff = calcMaxDiff(robotMotion, presntState);
+				if (maxdiff < 40){
+					//실제 잡기.
+
+					break;
+				}
+
 				printf("Move next step robot motion press any key\n");
 				getch();
 				robot.Move(robotMotion);
-				/*robot.safeRelease();
-				robot.safeMove(robotMotion);*/
+
 			}
+
+			//잡은 이후
+			printf("after grasping, press any key\n");
+			getch();
 
 			robot.safeRelease();
 		}
@@ -170,4 +179,17 @@ void depthVis(cv::Mat src, char* windowName){
 		}
 	}
 	cv::imshow(windowName, temp);
+}
+
+int calcMaxDiff(int *src1, int*src2){
+	int max = -1;
+
+	for (int i = 0; i < NUM_XEL; i++){
+		int diff = abs(src1[i] - src2[i]);
+
+		if (max < diff)
+			max = diff;
+	}
+
+	return max;
 }

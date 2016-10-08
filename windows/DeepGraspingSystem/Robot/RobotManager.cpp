@@ -145,3 +145,17 @@ void RobotManager::FingerTorqueOff(){
 void RobotManager::setVel(int* src){
 	arm.SetGoalVelocity(src);
 }
+
+void RobotManager::getPresState(int *dst){
+	arm.GetPresPosition(dst);
+}
+
+void RobotManager::grasp(){
+	int State[NUM_FINGER];
+	arm.SetFingerPosition(FinLimitMotion[1]);
+
+	while (1){
+		arm.GetFingerPosition(State);
+		//LoadCheck
+	}
+}

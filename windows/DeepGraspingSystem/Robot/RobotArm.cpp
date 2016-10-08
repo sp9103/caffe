@@ -312,3 +312,9 @@ void RobotArm::FingerTorqueOn(){
 void RobotArm::FingerTorqueOff(){
 	fingercontroller_.TorqueOff();
 }
+
+int RobotArm::GetFingerPosition(int *presntPosition){
+	fingercontroller_.GetPresPosition(presntPosition);
+
+	return 1;
+}

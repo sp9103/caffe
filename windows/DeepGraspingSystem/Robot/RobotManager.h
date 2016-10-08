@@ -32,6 +32,9 @@ public:
 
 	void setVel(int* src);
 	void Move(int *pos);
+	
+	void getPresState(int *dst);
+	void grasp();
 
 private:
 	int FinLimitMotion[2][3];

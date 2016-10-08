@@ -32,6 +32,7 @@ public:
 	int GetPresVelocity(int *PresentVelocity = NULL);					//현재 속도 받아오기
 	int GetGoalVelocity(int *GoalVelocity = NULL);						//목표 속도 받아오기
 	int GetFingerLoad(int *load = NULL);
+	int GetFingerPosition(int *presntPosition);
 
 	int SetGoalVelocity(int *GoalVelocity);
 	int SetGoalPosition(int *GoalPosition);
