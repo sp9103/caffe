@@ -235,6 +235,12 @@ int RobotArm::SetFingerPosition(int *GoalPosition){
 	return 1;
 }
 
+int RobotArm::SetJointPosition(int *GoalPosition){
+	if (!jointcontroller_.SetGoalPosition(GoalPosition))					return -1;
+
+	return 1;
+}
+
 int RobotArm::Arm_Get_JointValue(Eigen::VectorXi *value)
 {
 	value->resize(NUM_JOINT);
@@ -315,6 +321,17 @@ void RobotArm::FingerTorqueOff(){
 
 int RobotArm::GetFingerPosition(int *presntPosition){
 	fingercontroller_.GetPresPosition(presntPosition);
+
+	return 1;
+}
+
+int RobotArm::GetJointGoalPosition(int *GoalPosition){
+	jointcontroller_.GetGoalPosition(GoalPosition);
+	return 1;
+}
+
+int RobotArm::isFingerMove(bool *ismove){
+	fingercontroller_.isMoving(ismove);
 
 	return 1;
 }

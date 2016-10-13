@@ -20,6 +20,7 @@ public:
 	int DeInitialize();
 
 	void Approaching(int *pos);
+	void Lift();
 
 	void safeRelease();
 	void safeMove(int *pos);
@@ -27,13 +28,14 @@ public:
 	void TorqueOn();
 	void TorqueOff();
 
-	void FingerTorqueOn();
-	void FingerTorqueOff();
-
 	void setVel(int* src);
 	void Move(int *pos);
 	
 	void getPresState(int *dst);
+	
+	//finger
+	void FingerTorqueOn();
+	void FingerTorqueOff();
 	void grasp();
 
 private:

@@ -33,11 +33,14 @@ public:
 	int GetGoalVelocity(int *GoalVelocity = NULL);						//목표 속도 받아오기
 	int GetFingerLoad(int *load = NULL);
 	int GetFingerPosition(int *presntPosition);
+	int isFingerMove(bool *ismove);
+	int GetJointGoalPosition(int *GoalPosition = NULL);
 
 	int SetGoalVelocity(int *GoalVelocity);
 	int SetGoalPosition(int *GoalPosition);
 	int SetLED(bool onoff);
 	int SetFingerPosition(int *GoalPosition);
+	int SetJointPosition(int *GoalPosition);
 
 	void safeReleasePose();
 	void safeMovePose(int *goal);

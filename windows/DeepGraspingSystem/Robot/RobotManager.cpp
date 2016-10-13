@@ -19,7 +19,7 @@ RobotManager::~RobotManager()
 
 void RobotManager::ControllerInit(int PortNum, int BaudRateNum){
 	int robotid[] = { 1, 3, 5, 7, 9, 11, 13, 15, 17 };
-	int vel[] = { 1000, 1000, 1000, 1000, 1000, 1000, 50, 50, 50 };
+	int vel[] = { 2000, 2000, 2000, 2000, 2000, 2000, 50, 50, 50 };
 	arm.Init(PortNum, BaudRateNum, robotid);
 	arm.SetGoalVelocity(vel);
 }
@@ -90,13 +90,12 @@ void RobotManager::TorqueOff(){
 }
 
 void RobotManager::Move(int *pos){
-	int presPos[NUM_XEL];
-	arm.GetGoalPosition(presPos);
-
 	while (1){
 		int goalPos[NUM_XEL];
 		arm.SetGoalPosition(pos);
 		arm.GetGoalPosition(goalPos);
+		/*arm.SetJointPosition(pos);
+		arm.GetJointGoalPosition(goalPos);*/
 
 		int i = 0;
 		for (i = 0; i < NUM_XEL; i++){
@@ -130,6 +129,12 @@ void RobotManager::Approaching(int *pos){
 	if (pos[1] > 151471)	pos[1] = 151471;
 	if (pos[1] < -152820)	pos[1] = -152820;
 	
+	////////////////////////////
+	pos[NUM_JOINT] = 2647;
+	pos[NUM_JOINT + 1] = 1437;
+	pos[NUM_JOINT + 2] = 1972;
+	////////////////////////////
+
 	arm.SetFingerPosition(&pos[NUM_JOINT]);
 	arm.safeMovePose(pos);
 }
@@ -151,11 +156,78 @@ void RobotManager::getPresState(int *dst){
 }
 
 void RobotManager::grasp(){
-	int State[NUM_FINGER];
-	arm.SetFingerPosition(FinLimitMotion[1]);
+	int target[NUM_FINGER] = { 2425, 1646, 2183 };
+	int angLimit[NUM_FINGER] = {-1, -1, 1876};
+	int tempTarget[NUM_FINGER];
+	int state[NUM_FINGER];
+	int loadStatus[NUM_FINGER];
+	bool check[NUM_FINGER] = {true, true, true};	//true : not completeMove
+	int checkCount = 0;
+	int loadLimit[NUM_FINGER] = { 150, 150, 150 };
+
+	memcpy(tempTarget, target, sizeof(int) * NUM_FINGER);
+
+	arm.SetFingerPosition(tempTarget);
+	Sleep(50);
 
 	while (1){
-		arm.GetFingerPosition(State);
-		//LoadCheck
+		arm.SetFingerPosition(tempTarget);
+
+		arm.GetFingerPosition(state);
+
+		//µµ´ÞÇßÀ»¶§ ¸ØÃã
+		int endCount = 0;
+		for (int i = 0; i < NUM_FINGER; i++){
+			int diff = abs(state[i] - target[i]);
+			if (diff < 40)
+				endCount++;
+		}
+		if (endCount == NUM_FINGER)
+			break;
+
+		arm.GetFingerLoad(loadStatus);
+		printf("Load : ");
+		for (int i = 0; i < NUM_FINGER; i++){
+			if (i == 2 && state[i] < angLimit[i])
+				continue;
+
+			loadStatus[i] = loadStatus[i] > 1024 ? (loadStatus[i] - 1023) : loadStatus[i];
+			printf("%d ", loadStatus[i]);
+			if (check[i]){
+				if (loadStatus[i] > loadLimit[i]){
+					check[i] = false;
+					tempTarget[i] = state[i];
+					checkCount++;
+				}
+			}
+		}
+		printf("\n");
+
+		if (checkCount == NUM_FINGER)
+			break;
+
+		if (check[1] == false && check[2] == false)
+			break;
+
+		Sleep(10);
+	}
+}
+
+void RobotManager::Lift(){
+	int state[NUM_XEL];
+	int minus_state[NUM_XEL] = {-174179, 90749, 129225, 124307, -21859, 7878};
+	int plus_state[NUM_XEL] = {173381, 101874, -114895, 134769, 11564, 1580};
+	arm.GetPresPosition(state);
+	if (state[0] > 0){
+		printf("-plus\n");
+		for (int i = 0; i < NUM_JOINT; i++)
+			state[i] = plus_state[i];
+		arm.SetGoalPosition(state);
+	}
+	else{
+		printf("-minus\n");
+		for (int i = 0; i < NUM_JOINT; i++)
+			state[i] = minus_state[i];
+		arm.SetGoalPosition(state);
 	}
 }

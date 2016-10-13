@@ -19,11 +19,14 @@ int calcMaxDiff(int *src1, int*src2);
 
 int main(){
 	//0-1. Kinect Initialize
-	cv::Rect				RobotROI((KINECT_DEPTH_WIDTH - 160) / 2 + 40, (KINECT_DEPTH_HEIGHT - 160) / 2, 160, 160);
+	int width = 240;
+	int height = 200;
+	cv::Rect				RobotROI((KINECT_DEPTH_WIDTH - width) / 2, (KINECT_DEPTH_HEIGHT - height) / 2, width, height);
 	KinectMangerThread		kinect;
 	kinect.Initialize(RobotROI);
 
 	//0-2. Robot Initialze
+	getch();
 	RobotManager			robot;
 	robot.Initialize(4, 3);
 
@@ -86,7 +89,9 @@ int main(){
 			getch();
 			robot.Approaching(robotMotion);
 			printf("if motion end, press any key\n");
+			//robot.FingerTorqueOff();
 			getch();
+			//robot.FingerTorqueOn();
 
 			//Pregrasp
 			while (1){
@@ -112,22 +117,24 @@ int main(){
 				int presntState[NUM_XEL];
 				robot.getPresState(presntState);
 				int maxdiff = calcMaxDiff(robotMotion, presntState);
-				if (maxdiff < 40){
+				printf("max diff %d\n", maxdiff);
+				if (maxdiff < 900){
 					//실제 잡기.
-
+					robot.grasp();
 					break;
 				}
 
 				printf("Move next step robot motion press any key\n");
-				getch();
 				robot.Move(robotMotion);
 
 			}
 
 			//잡은 이후
-			printf("after grasping, press any key\n");
+			/*printf("after grasping, press any key\n");
+			getch();*/
+			robot.Lift();
+			printf("after Lift, press any key\n");
 			getch();
-
 			robot.safeRelease();
 		}
 		else if (key == 'q')
