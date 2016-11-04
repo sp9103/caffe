@@ -11,8 +11,8 @@ layer {
   sp_unsupervised_data_param {
     batch_size: 500
     channels: 3
-    height : 160
-    width : 160
+    height : 250
+    width : 400
     data_path : "M:/IK_data/TRAIN"
   }
 }
@@ -28,8 +28,8 @@ layer {
   sp_unsupervised_data_param {
     batch_size: 500
     channels: 3
-    height : 160
-    width : 160
+    height : 250
+    width : 400
     data_path : "M:/IK_data/TRAIN"
     #data_limit : 2000
 

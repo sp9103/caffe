@@ -59,8 +59,8 @@ namespace caffe {
 
 		for (int i = 0; i < batchsize; i++){
 			for (int j = 0; j < 9; j++){
-				angDiff[j] += abs(diffdata[j]) / batchsize;
-				lossTotal += angDiff[j];
+				angDiff[j] += abs(diffdata[i * 9 + j]) / batchsize;
+				lossTotal += angDiff[i * 9 + j];
 			}
 		}
 		for (int i = 0; i < 9; i++)
