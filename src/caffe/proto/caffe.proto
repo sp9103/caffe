@@ -306,7 +306,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 148 (last added: parameter_param)
+// LayerParameter next available layer-specific ID: 149 (last added: parameter_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -404,6 +404,7 @@ message LayerParameter {
   optional WindowDataParameter window_data_param = 129;
   optional SPUnsupervisedDataParameter sp_unsupervised_data_param = 146;
   optional SpatialParameter spatial_param = 147;
+  optional GMMParameter gmm_param = 148;
 }
 
 // Message that stores parameters used to apply transformation
@@ -1406,6 +1407,15 @@ message SpatialParameter {
   optional float alpha = 1 [default = 1];
 
   optional bool visualize = 2;
+}
+
+// Message custom_data_layer parameter
+message GMMParameter {
+  // Specify the data source.
+  optional uint32 class_size = 1;
+  optional uint32 data_dim = 2;
+  optional int32  sigma_min = 3 [default = 5];
+  optional int32 sigma_max = 4 [default = -20];
 }
 
 
