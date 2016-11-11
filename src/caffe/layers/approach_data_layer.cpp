@@ -79,15 +79,26 @@ namespace caffe {
 		Dtype* depth_data = top[1]->mutable_cpu_data();					//[1] Depth
 		Dtype* ang_data = top[2]->mutable_cpu_data();					//[2] ang postion (label)
 
-		stop_thread = true;
-		for (int i = 0; i < ThreadCount; i++){
-			LoadThread[i].join();
-		}
-
 		for (int i = 0; i < batch_size_; i++){
-			cv::Mat angMat = *ang_blob.begin();
-			cv::Mat	rgbImg = *image_blob.begin();
-			cv::Mat depth = *depth_blob.begin();
+			save_mtx.lock();
+			cv::Mat angMat;
+			cv::Mat	rgbImg;
+			cv::Mat depth;
+			if (ang_blob.size() > 1){
+				angMat = *ang_blob.begin();
+				rgbImg = *image_blob.begin();
+				depth = *depth_blob.begin();
+
+				ang_blob.pop_front();
+				image_blob.pop_front();
+				depth_blob.pop_front();
+			}
+			else{
+				i--;
+				save_mtx.unlock();
+				continue;
+			}
+			save_mtx.unlock();
 
 			caffe_copy(channels_ * height_ * width_, rgbImg.ptr<Dtype>(0), rgb_data);
 			caffe_copy(height_ * width_, depth.ptr<Dtype>(0), depth_data);
@@ -96,15 +107,6 @@ namespace caffe {
 			rgb_data += top[0]->offset(1);
 			depth_data += top[1]->offset(1);
 			ang_data += top[2]->offset(1);
-
-			ang_blob.pop_front();
-			image_blob.pop_front();
-			depth_blob.pop_front();
-		}
-
-		stop_thread = false;
-		for (int i = 0; i < ThreadCount; i++){
-			LoadThread[i] = std::thread(&ApproachDataLayer::LoadFuc, this, ThreadCount, i);
 		}
 	}
 
@@ -241,18 +243,18 @@ namespace caffe {
 	}
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::LoadFuc(int totalThread, int id){
+	void ApproachDataLayer<Dtype>::LoadFuc(){
 		const int ThreadLimit = 4000;
 		std::thread FileLoadThread[ThreadLimit];
 		int ThreadIdx = 0, dataidx = 0;
 
 		for (int i = 0; i < ThreadLimit; i++){
 			FilePath srcPath = FileList.at(dataidx++);
-			FileLoadThread[i] = std::thread(&LeapDataLayer::ReadFuc, this, srcPath);
+			FileLoadThread[i] = std::thread(&ApproachDataLayer::ReadFuc, this, srcPath);
 		}
 
 		while (1){
-			int label_count = label_blob.size();
+			int label_count = ang_blob.size();
 			if (label_count < ThreadLimit){
 				FilePath srcPath = FileList.at(dataidx++);
 				//불러오기 쓰레드
@@ -260,7 +262,7 @@ namespace caffe {
 					FileLoadThread[ThreadIdx].join();
 				else
 					printf("noting.\n");
-				FileLoadThread[ThreadIdx] = std::thread(&LeapDataLayer::ReadFuc, this, srcPath);
+				FileLoadThread[ThreadIdx] = std::thread(&ApproachDataLayer::ReadFuc, this, srcPath);
 				ThreadIdx = (ThreadIdx + 1) % ThreadLimit;
 
 				//초과됬을때
@@ -270,85 +272,6 @@ namespace caffe {
 				}
 			}
 		}
-		////angle min max
-		//int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
-
-		//while (!stop_thread || ang_blob.size() < batch_size_){
-		//	FILE *fp;
-		//	int depthwidth, depthheight, depthType;
-
-		//	idx_mtx.lock();
-		//	int myIdx = dataidx;
-		//	dataidx = (dataidx + 1) % FileList.size();
-		//	FilePath tempPath = FileList.at(myIdx);
-		//	idx_mtx.unlock();
-
-		//	//RGB load
-		//	std::string imageFilaPath = tempPath.image_path;
-		//	cv::Mat img = cv::imread(imageFilaPath);
-		//	cv::Mat tempdataMat(height_, width_, CV_32FC3);
-		//	for (int h = 0; h < img.rows; h++){
-		//		for (int w = 0; w < img.cols; w++){
-		//			for (int c = 0; c < img.channels(); c++){
-		//				tempdataMat.at<float>(c*height_*width_ + width_*h + w) = (float)img.at<cv::Vec3b>(h, w)[c] / 255.0f;
-		//			}
-		//		}
-		//	}
-
-		//	//Angle load
-		//	std::string angleFilaPath = tempPath.ang_path;
-		//	fp = fopen(angleFilaPath.c_str(), "r");
-		//	if (fp == NULL)
-		//		continue;
-		//	cv::Mat angMat(9, 1, CV_32FC1);
-		//	cv::Mat labelMat(9, 1, CV_32FC1);
-		//	int angBox[9];
-		//	bool angError = false;
-		//	for (int i = 0; i < 9; i++){
-		//		fscanf(fp, "%d", &angBox[i]);
-		//		angMat.at<float>(i) = (float)angBox[i] / angle_max[i] * 180.f;
-		//		labelMat.at<float>(i) = angMat.at<float>(i);
-		//		if (angBox[i] >= 250950 || angBox[i] <= -250950){
-		//			angError = true;
-		//			break;
-		//		}
-		//	}
-		//	if (angError){
-		//		FileList.erase(FileList.begin() + myIdx);
-		//		continue;
-		//	}
-		//	fclose(fp);
-
-		//	//Depth load
-		//	std::string depthFilePath = tempPath.depth_path;
-		//	fp = fopen(depthFilePath.c_str(), "rb");
-		//	if (fp == NULL)
-		//		continue;
-		//	fread(&depthwidth, sizeof(int), 1, fp);
-		//	fread(&depthheight, sizeof(int), 1, fp);
-		//	fread(&depthType, sizeof(int), 1, fp);
-		//	cv::Mat depthMap(depthheight, depthwidth, depthType);
-		//	for (int i = 0; i < depthMap.rows * depthMap.cols; i++)        fread(&depthMap.at<float>(i), sizeof(float), 1, fp);
-		//	fclose(fp);
-
-		//	//store
-		//	save_mtx.lock();
-		//	image_blob.push_back(tempdataMat);
-		//	depth_blob.push_back(depthMap);
-		//	ang_blob.push_back(angMat);
-		//	labelMat.push_back(labelMat);
-		//	save_mtx.unlock();
-
-		//	if (dataidx >= this->FileList.size()){
-		//		idx_mtx.lock();
-		//		dataidx = 0;
-		//		std::random_shuffle(FileList.begin(), FileList.end());
-		//		idx_mtx.unlock();
-		//	}
-
-		//	if (image_blob.size() > 4000)
-		//		break;
-		//}
 	}
 
 	template <typename Dtype>
@@ -356,7 +279,7 @@ namespace caffe {
 		//angle min max
 		int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
 		//RGB load
-		std::string imageFilaPath = tempPath.image_path;
+		std::string imageFilaPath = src.image_path;
 		cv::Mat img = cv::imread(imageFilaPath);
 		cv::Mat tempdataMat(height_, width_, CV_32FC3);
 		for (int h = 0; h < img.rows; h++){
@@ -368,10 +291,10 @@ namespace caffe {
 		}
 
 		//Angle load
-		std::string angleFilaPath = tempPath.ang_path;
-		fp = fopen(angleFilaPath.c_str(), "r");
+		std::string angleFilaPath = src.ang_path;
+		FILE *fp = fopen(angleFilaPath.c_str(), "r");
 		if (fp == NULL)
-			continue;
+			return;
 		cv::Mat angMat(9, 1, CV_32FC1);
 		cv::Mat labelMat(9, 1, CV_32FC1);
 		int angBox[9];
@@ -386,16 +309,16 @@ namespace caffe {
 			}
 		}
 		if (angError){
-			FileList.erase(FileList.begin() + myIdx);
-			continue;
+			return;
 		}
 		fclose(fp);
 
 		//Depth load
-		std::string depthFilePath = tempPath.depth_path;
+		std::string depthFilePath = src.depth_path;
 		fp = fopen(depthFilePath.c_str(), "rb");
 		if (fp == NULL)
-			continue;
+			return;
+		int depthwidth, depthheight, depthType;
 		fread(&depthwidth, sizeof(int), 1, fp);
 		fread(&depthheight, sizeof(int), 1, fp);
 		fread(&depthType, sizeof(int), 1, fp);
