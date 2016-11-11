@@ -45,7 +45,7 @@ void IK_Data_Loader::LoadDataAll(char *RootPath){
 			HANDLE hDataFind = INVALID_HANDLE_VALUE;
 			char procDir[256];
 			strcpy(procDir, tBuf);
-			strcat(procDir, "\\PROCESSIMG2\\*");
+			strcat(procDir, "\\PROCESSIMG\\*");
 			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, procDir, strlen(procDir), szProcDir, MAX_PATH);
 			hDataFind = FindFirstFile(szProcDir, &class_ffd);
 
@@ -77,11 +77,11 @@ void IK_Data_Loader::LoadDataAll(char *RootPath){
 				filePathLen = strlen(ProcImageFile);
 				ProcImageFile[filePathLen - 1] = '\0';
 				strcat(ProcImageFile, ProcFileName);
-				tempPath.rgbpath = ProcImageFile;
+				strcpy(tempPath.rgbpath, ProcImageFile);
 
 				//RGB Ori
 				sprintf(RgbOriFile, "%s\\RGB\\%s", tBuf, ProcFileName);
-				tempPath.rgbOriPath = RgbOriFile;
+				strcpy(tempPath.rgbOriPath, RgbOriFile);
 
 				//2. angle 읽어오기
 				sprintf(AngDataFile, "%s\\ANGLE\\%s", tBuf, ProcFileName);
@@ -89,15 +89,15 @@ void IK_Data_Loader::LoadDataAll(char *RootPath){
 				AngDataFile[filePathLen - 1] = 't';
 				AngDataFile[filePathLen - 2] = 'x';
 				AngDataFile[filePathLen - 3] = 't';
-				tempPath.angpath = AngDataFile;
+				strcpy(tempPath.angpath, AngDataFile);
 
 				//3.Depth 읽어오기
-				sprintf(DepthFile, "%s\\DEPTHMAP2\\%s", tBuf, ProcFileName);
+				sprintf(DepthFile, "%s\\PROCDEPTH\\%s", tBuf, ProcFileName);
 				filePathLen = strlen(DepthFile);
 				DepthFile[filePathLen - 1] = 'n';
 				DepthFile[filePathLen - 2] = 'i';
 				DepthFile[filePathLen - 3] = 'b';
-				tempPath.depthpath = DepthFile;
+				strcpy(tempPath.depthpath, DepthFile);
 
 				////////////////////////////////////////////////////////////
 				//새로 저장할 파일 경로 생성
@@ -106,7 +106,7 @@ void IK_Data_Loader::LoadDataAll(char *RootPath){
 				AngDataFile[filePathLen - 1] = 't';
 				AngDataFile[filePathLen - 2] = 'x';
 				AngDataFile[filePathLen - 3] = 't';
-				tempPath.newPath = AngDataFile;
+				strcpy(tempPath.newPath, AngDataFile);
 				////////////////////////////////////////////////////////////
 
 				//4.저장
@@ -129,7 +129,9 @@ void IK_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *ang, cv::Mat
 	FilePath tempPath = FileList.at(idx);
 	//rgb
 	cv::Mat img = cv::imread(tempPath.rgbpath);
-	cv::Mat tempdataMat(height_, width_, CV_32FC3);
+	cv::Mat tempdataMat(img.rows, img.cols, CV_32FC3);
+	height_ = img.rows;
+	width_ = img.cols;
 	for (int h = 0; h < img.rows; h++){
 		for (int w = 0; w < img.cols; w++){
 			for (int c = 0; c < img.channels(); c++){
@@ -138,7 +140,8 @@ void IK_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *ang, cv::Mat
 		}
 	}
 
-	FILE *fp = fopen(tempPath.angpath.c_str(), "r");
+	FILE *fp = NULL;
+	fp = fopen(tempPath.angpath, "r");
 	if (fp == NULL)		return;
 	cv::Mat angMat(9, 1, CV_32FC1);
 	cv::Mat angOriMat(9, 1, CV_32FC1);
@@ -157,11 +160,11 @@ void IK_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *ang, cv::Mat
 	fclose(fp);
 
 	int depthwidth, depthheight, depthType;
-	fp = fopen(tempPath.depthpath.c_str(), "rb");
+	fp = fopen(tempPath.depthpath, "rb");
 	fread(&depthwidth, sizeof(int), 1, fp);
 	fread(&depthheight, sizeof(int), 1, fp);
 	fread(&depthType, sizeof(int), 1, fp);
-	cv::Mat depthMap(depthheight, depthwidth, depthType);
+	cv::Mat depthMap(depthwidth, depthheight, depthType);
 	for (int i = 0; i < depthMap.rows * depthMap.cols; i++)		fread(&depthMap.at<float>(i), sizeof(float), 1, fp);
 	fclose(fp);
 
@@ -279,7 +282,7 @@ void IK_Data_Loader::createEndeffector(char *RootPath, armsdk::Kinematics *kin){
 }
 
 void IK_Data_Loader::writeAngle(int *src, int idx){
-	FILE *fp = fopen(FileList.at(idx).newPath.c_str(), "w");
+	FILE *fp = fopen(FileList.at(idx).newPath, "w");
 	for (int i = 0; i < 9; i++)
 		fprintf(fp, "%d\n", src[i]);
 	fclose(fp);

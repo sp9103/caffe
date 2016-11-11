@@ -9,8 +9,8 @@
 //#include "Pregrasp_Data_Loader.h"
 //#include "SimulatorControl.h"
 
-#define HEIGHT			160
-#define WIDTH			160
+#define HEIGHT			250
+#define WIDTH			400
 #define CHANNEL			3
 #define ClASSNUM		5
 #define DATADIM			9
@@ -18,7 +18,7 @@
 //#define SOLVER "deploy_IK_Net_fc.prototxt"
 //#define TRAINRESULT "weight_fc\\IK_Net_iter_50000.caffemodel"
 #define SOLVER "deploy_val.prototxt"
-#define TRAINRESULT "..\\caffe\\IK_AlexNet\\snapshot_with_bn\\IK_AlexNet_iter_85035.caffemodel"
+#define TRAINRESULT "..\\caffe\\IK_AlexNet\\snapshot_1104\\IK_AlexNet_iter_13471.caffemodel"
 #define RIGHT_ARM_USE
 
 using namespace caffe;
@@ -97,7 +97,7 @@ void depthVis(cv::Mat src);
 //	caffe_test_net.CopyTrainedLayersFrom(TRAINRESULT);
 //
 //	IK_Data_Loader TestDataLoader;
-//	TestDataLoader.LoadDataAll(/*"D:\\self_supervisedData\\TEST"*/"M:\\IK_data\\ik_add_TEST");
+//	TestDataLoader.LoadDataAll(/*"D:\\self_supervisedData\\TEST"*/"E:\\IK_data\\TRAIN");
 //
 //	//Test & 통계 내기;
 //	Blob<float> rgbBlob(1, 3, HEIGHT, WIDTH);
@@ -466,7 +466,7 @@ void depthVis(cv::Mat src);
 //
 //	return 0;
 //}
-//
+
 //approach net labe 계산
 int main(){
 	int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
@@ -490,7 +490,7 @@ int main(){
 
 	//data load
 	Approach_Data_Loader dataLoader;
-	dataLoader.LoadDataAll("L:\\Approach_new\\ApproachData\\TRAIN");
+	dataLoader.LoadDataAll("E:\\Approach_data");
 	//Pregrasp_Data_Loader dataLoader;
 	//dataLoader.LoadDataAll("L:\\Pregrasp0909\\TRAIN");
 

@@ -24,11 +24,11 @@ public:
 
 private:
 	typedef struct filepath_{
-		std::string rgbpath;
-		std::string depthpath;
-		std::string angpath;
-		std::string rgbOriPath;
-		std::string newPath;
+		char rgbpath[256];
+		char depthpath[256];
+		char angpath[256];
+		char rgbOriPath[256];
+		char newPath[256];
 	}FilePath;
 
 	int height_, width_;

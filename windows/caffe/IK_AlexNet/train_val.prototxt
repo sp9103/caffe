@@ -9,11 +9,11 @@ layer {
     phase: TRAIN
   }
   sp_unsupervised_data_param {
-    batch_size: 500
+    batch_size: 128
     channels: 3
     height : 250
     width : 400
-    data_path : "M:/IK_data/TRAIN"
+    data_path : "E:/IK_data/TRAIN"
   }
 }
 layer {
@@ -26,11 +26,11 @@ layer {
     phase: TEST
   }
   sp_unsupervised_data_param {
-    batch_size: 500
+    batch_size: 10
     channels: 3
     height : 250
     width : 400
-    data_path : "M:/IK_data/TRAIN"
+    data_path : "E:/IK_data/TEST"
     #data_limit : 2000
 
   }

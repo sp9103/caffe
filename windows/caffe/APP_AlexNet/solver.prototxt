@@ -12,5 +12,5 @@ max_iter: 600000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 10000
-snapshot_prefix: "APP_AlexNet/snapshot_app_alexnet/APP_AlexNet"
+snapshot_prefix: "APP_AlexNet/snapshot_app_alexnet_1111/APP_AlexNet"
 solver_mode: GPU

@@ -41,11 +41,16 @@
     <Import Project="..\CommonSettings.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>D:\Users\Vision Demo\Caffe_RobotTest\Caffe_RobotTest\Caffe_RobotTest\eigen;C:\Users\VisionTeam\Documents\caffe\windows\CaffeRobotTest\ARMSDK\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Users\Vision Demo\Caffe_RobotTest\Caffe_RobotTest\Caffe_RobotTest\eigen;C:\Users\VisionTeam\Documents\caffe\windows\CaffeRobotTest\ARMSDK\include;C:\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\opencv\build\x64\vc12\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\opencv\build\x64\vc12\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
-      <AdditionalDependencies>libcaffe.lib;$(CudaDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcaffe.lib;$(CudaDependencies);opencv_highgui2410.lib;opencv_imgproc2410.lib;opencv_core2410.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -54,7 +59,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
-      <AdditionalDependencies>libcaffe.lib;$(CudaDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcaffe.lib;$(CudaDependencies);opencv_highgui2410.lib;opencv_imgproc2410.lib;opencv_core2410.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>

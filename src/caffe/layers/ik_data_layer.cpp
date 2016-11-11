@@ -145,7 +145,7 @@ void IKDataLayer<Dtype>::IK_DataLoadAll(const char* datapath){
 			HANDLE hDataFind = INVALID_HANDLE_VALUE;
 			char procDir[256];
 			strcpy(procDir, tBuf);
-			strcat(procDir, "\\PROCESSIMG2\\*");
+			strcat(procDir, "\\PROCESSIMG\\*");
 			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, procDir, strlen(procDir), szProcDir, MAX_PATH);
 			hDataFind = FindFirstFile(szProcDir, &class_ffd);
 
@@ -168,7 +168,6 @@ void IKDataLayer<Dtype>::IK_DataLoadAll(const char* datapath){
 				filePathLen = strlen(ProcImageFile);
 				ProcImageFile[filePathLen - 1] = '\0';
 				strcat(ProcImageFile, ProcFileName);
-				//image_path.push_back(ProcImageFile);
 				tempPath.image_path = ProcImageFile;
 
 				//2. angle 읽어오기
@@ -177,16 +176,14 @@ void IKDataLayer<Dtype>::IK_DataLoadAll(const char* datapath){
 				AngDataFile[filePathLen - 1] = 't';
 				AngDataFile[filePathLen - 2] = 'x';
 				AngDataFile[filePathLen - 3] = 't';
-				//ang_path.push_back(AngDataFile);
 				tempPath.ang_path = AngDataFile;
 
 				//3.depth 읽어오기
-				sprintf(DepthFile, "%s\\DEPTHMAP2\\%s", tBuf, ProcFileName);
+				sprintf(DepthFile, "%s\\PROCDEPTH\\%s", tBuf, ProcFileName);
 				filePathLen = strlen(DepthFile);
 				DepthFile[filePathLen - 1] = 'n';
 				DepthFile[filePathLen - 2] = 'i';
 				DepthFile[filePathLen - 3] = 'b';
-				//depth_path.push_back(DepthFile);
 				tempPath.depth_path = DepthFile;
 
 				char idBuf[256];
@@ -236,7 +233,7 @@ void IKDataLayer<Dtype>::LoadFuc(int totalThread, int id){
 		idx_mtx.unlock();
 
 		//RGB load
-		std::string imageFilaPath = /*image_path.at(myIdx)*/tempPath.image_path;
+		std::string imageFilaPath = tempPath.image_path;
 		cv::Mat img = cv::imread(imageFilaPath);
 		cv::Mat tempdataMat(height_, width_, CV_32FC3);
 		for (int h = 0; h < img.rows; h++){
@@ -248,7 +245,7 @@ void IKDataLayer<Dtype>::LoadFuc(int totalThread, int id){
 		}
 
 		//Angle load
-		std::string angleFilaPath = /*ang_path.at(myIdx)*/tempPath.ang_path;
+		std::string angleFilaPath = tempPath.ang_path;
 		fp = fopen(angleFilaPath.c_str(), "r");
 		if (fp == NULL)
 			continue;
@@ -266,16 +263,13 @@ void IKDataLayer<Dtype>::LoadFuc(int totalThread, int id){
 			}
 		}
 		if (angError){
-			/*ang_path.erase(ang_path.begin() + myIdx);
-			depth_path.erase(depth_path.begin() + myIdx);
-			image_path.erase(image_path.begin() + myIdx);*/
 			FileList.erase(FileList.begin() + myIdx);
 			continue;
 		}
 		fclose(fp);
 
 		//Depth load
-		std::string depthFilePath = /*depth_path.at(myIdx)*/tempPath.depth_path;
+		std::string depthFilePath = tempPath.depth_path;
 		fp = fopen(depthFilePath.c_str(), "rb");
 		if (fp == NULL)
 			continue;

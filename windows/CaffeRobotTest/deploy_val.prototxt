@@ -3,15 +3,15 @@ input: "rgb"
 input_shape {
   dim: 1
   dim: 3
-  dim: 160
-  dim: 160
+  dim: 250
+  dim: 400
 }
 input: "depth"
 input_shape {
   dim: 1
   dim: 1
-  dim: 160
-  dim: 160
+  dim: 250
+  dim: 400
 }
 layer {
   name: "conv1"

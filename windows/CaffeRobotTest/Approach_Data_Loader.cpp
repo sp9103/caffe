@@ -79,7 +79,7 @@ void Approach_Data_Loader::LoadDataAll(char *RootPath){
 				strcpy(objName, ProcFileName);
 				filePathLen = strlen(ProcFileName);
 				objName[filePathLen - 4] = '\0';
-				sprintf(ApproachPath, "%s\\APPROACH\\%s\\PROCIMG_2\\*", tBuf, objName);
+				sprintf(ApproachPath, "%s\\APPROACH\\%s\\PROCIMG\\*", tBuf, objName);
 				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, ApproachPath, strlen(ApproachPath), szIdxDir, MAX_PATH);
 				hApproachFind = FindFirstFile(szIdxDir, &class_ffd);
 
@@ -95,9 +95,9 @@ void Approach_Data_Loader::LoadDataAll(char *RootPath){
 
 					//image load
 					char appImgFile[256], appDepthFile[256], appAngleFile[256];
-					sprintf(appImgFile, "%s\\APPROACH\\%s\\PROCIMG_2\\%s", tBuf, objName, ApproachImg);
+					sprintf(appImgFile, "%s\\APPROACH\\%s\\PROCIMG\\%s", tBuf, objName, ApproachImg);
 
-					sprintf(appDepthFile, "%s\\APPROACH\\%s\\PROCDEPTH_2\\%s", tBuf, objName, ApproachImg);
+					sprintf(appDepthFile, "%s\\APPROACH\\%s\\PROCDEPTH\\%s", tBuf, objName, ApproachImg);
 					int depthwidth, depthheight, depthType;
 					filePathLen = strlen(appDepthFile);
 					appDepthFile[filePathLen - 1] = 'n';
@@ -111,7 +111,7 @@ void Approach_Data_Loader::LoadDataAll(char *RootPath){
 					szAppAngleDir[strlen(appAnglePath)] = '\0';
 					bool mkdir_check = CreateDirectory(szAppAngleDir, NULL);
 
-					sprintf(appAngleFile, "%s\\%s", appAnglePath,ApproachImg);
+					sprintf(appAngleFile, "%s\\%s", appAnglePath, ApproachImg);
 					filePathLen = strlen(appAngleFile);
 					appAngleFile[filePathLen - 1] = 't';
 					appAngleFile[filePathLen - 2] = 'x';
@@ -136,12 +136,15 @@ void Approach_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *rgbOri
 	rgbOri->release();
 
 	int height_, width_;
-	height_ = width_ = 160;
+	height_ = 250;
+	width_ = 400;
 
 	FilePath tempPath = FileList.at(idx);
 	//rgb
 	cv::Mat img = cv::imread(tempPath.rgbpath);
-	cv::Mat tempdataMat(height_, width_, CV_32FC3);
+	cv::Mat tempdataMat(img.rows, img.cols, CV_32FC3);
+	height_ = img.rows;
+	width_ = img.cols;
 	for (int h = 0; h < img.rows; h++){
 		for (int w = 0; w < img.cols; w++){
 			for (int c = 0; c < img.channels(); c++){
@@ -155,7 +158,7 @@ void Approach_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *rgbOri
 	fread(&depthwidth, sizeof(int), 1, fp);
 	fread(&depthheight, sizeof(int), 1, fp);
 	fread(&depthType, sizeof(int), 1, fp);
-	cv::Mat depthMap(depthheight, depthwidth, depthType);
+	cv::Mat depthMap(depthwidth, depthheight, depthType);
 	for (int i = 0; i < depthMap.rows * depthMap.cols; i++)		fread(&depthMap.at<float>(i), sizeof(float), 1, fp);
 	fclose(fp);
 

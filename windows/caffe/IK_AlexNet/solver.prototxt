@@ -11,6 +11,6 @@ display: 10
 max_iter: 600000
 momentum: 0.9
 weight_decay: 0.0005
-snapshot: 10000
+snapshot: 5000
 snapshot_prefix: "IK_AlexNet/snapshot_1104/IK_AlexNet"
 solver_mode: GPU
