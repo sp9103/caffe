@@ -1416,6 +1416,7 @@ message GMMParameter {
   optional uint32 data_dim = 2;
   optional int32  sigma_min = 3 [default = 5];
   optional int32 sigma_max = 4 [default = -20];
+  optional float grad_clip = 5 [default = -1];
 }
 
 

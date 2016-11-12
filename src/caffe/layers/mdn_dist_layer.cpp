@@ -84,7 +84,7 @@ void MDNDistLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
    top[0]->mutable_cpu_data()[0] = TotalDist;
    for (int i = 0; i < 9; i++)
-	   printf("%.3f ", ang_total[i] * 180.f / M_PI);
+	   printf("%.3f ", ang_total[i] * 100.f);
    printf("\n");
    delete[] diff;
 }

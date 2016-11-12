@@ -301,7 +301,7 @@ namespace caffe {
 		bool angError = false;
 		for (int i = 0; i < 9; i++){
 			fscanf(fp, "%d", &angBox[i]);
-			angMat.at<float>(i) = (float)angBox[i] / angle_max[i] * 180.f;
+			angMat.at<float>(i) = (float)angBox[i] / angle_max[i] * 180.f / 100.f;
 			labelMat.at<float>(i) = angMat.at<float>(i);
 			if (angBox[i] >= 250950 || angBox[i] <= -250950){
 				angError = true;

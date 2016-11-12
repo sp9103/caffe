@@ -99,6 +99,19 @@ __global__ void kernel_delta_calc(const int count,
 }
 
 template <typename Dtype>
+__global__ void kernal_gradient_cliping(const int count,
+	const int batch_size, const int class_size, const int datadim,
+	const Dtype threshold, const Dtype* norm, Dtype* gradient ){
+	CUDA_KERNEL_LOOP(index, count) {
+		const int batchIdx = index % (class_size * datadim);
+
+		if (nrom[batchIdx] > threshold){
+			gradient[index] = threshold / norm[index] * gradient[index];
+		}
+	}
+}
+
+template <typename Dtype>
 void MDNLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
 
@@ -252,6 +265,42 @@ void MDNLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 			kernel_delta_calc<Dtype> << <CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS >> >(bottom[i]->count(),
 				batch_size, class_size, data_dim + 2, data_dim, sigma_min, sigma_max,
 				posterior_pi_.gpu_data(), diff_.gpu_data(), diff_norm_.gpu_data(), bottom_data, bottom_diff);
+			
+			//gradient cliping
+			if (grad_clip > 0){
+				//gradient cliping
+				caffe_gpu_mul(bottom[i]->count(), bottom[i]->gpu_diff(), bottom[i]->gpu_diff(), grad_norm.mutable_gpu_data());
+			}
+
+			/*if (log_limit < 100){
+				Dtype grad_norm_val = 0;
+				log_limit++;
+				caffe_gpu_mul(bottom[i]->count(), bottom[i]->gpu_diff(), bottom[i]->gpu_diff(), grad_norm.mutable_gpu_data());
+				for (int i = 0; i < 128; i++){
+					Dtype tempGrad[55];
+					Dtype sumgrad = 0;
+					cudaMemcpy(tempGrad, &grad_norm.gpu_data()[55 * i], sizeof(Dtype) * 55, cudaMemcpyDeviceToHost);
+					for (int j = 0; j < 55; j++){
+						sumgrad += tempGrad[j];
+					}
+					grad_norm_val += sqrt(sumgrad);
+				}
+
+				FILE *fp = NULL;
+				if (log_limit == 1)
+					fp = fopen("grad.txt", "w");
+				else
+					fp = fopen("grad.txt", "a");
+
+				fprintf(fp, "%f\n", grad_norm_val / (float)batch_size);
+				total += grad_norm_val / (float)batch_size;
+
+				fclose(fp);
+			}
+			else{
+				printf("END\n");
+				printf("%f\n", total / 100.f);
+			}*/
 		}
 	}
 }
