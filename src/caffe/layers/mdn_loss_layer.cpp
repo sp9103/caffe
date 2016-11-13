@@ -48,16 +48,10 @@ void MDNLossLayer<Dtype>::Reshape(
   alpha_pi_sum_.Reshape(batch_dim);
   batch_loss_.Reshape(batch_dim);
   sum_multiplier_.Reshape(batch_dim);
+  max_alpha_pi_.Reshape(batch_dim);
 
   Dtype* multiplier_data = sum_multiplier_.mutable_cpu_data();
   caffe_set(sum_multiplier_.count(), Dtype(1), multiplier_data);
-
-  vector<int> grad_dim(2);
-  grad_dim[0] = bottom[0]->shape()[0];
-  grad_dim[1] = class_size * (data_dim + 2);
-  grad_norm.Reshape(grad_dim);
-
-  grad_clip = this->layer_param_.gmm_param().grad_clip();
 
   visualize_ = this->layer_param_.spatial_param().visualize();
 }

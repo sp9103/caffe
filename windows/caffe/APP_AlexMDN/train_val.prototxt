@@ -693,6 +693,6 @@ layer {
   gmm_param{
 	data_dim : 9
 	class_size : 5
-          grad_clip : 170;
+          grad_clip : 80;
   }
 }

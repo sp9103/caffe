@@ -98,16 +98,79 @@ __global__ void kernel_delta_calc(const int count,
 	}
 }
 
-template <typename Dtype>
-__global__ void kernal_gradient_cliping(const int count,
-	const int batch_size, const int class_size, const int datadim,
-	const Dtype threshold, const Dtype* norm, Dtype* gradient ){
-	CUDA_KERNEL_LOOP(index, count) {
-		const int batchIdx = index % (class_size * datadim);
+//template <typename Dtype>
+//__global__ void kernel_gradient_cliping(const int count,
+//	const int batch_size, const int class_size, const int class_dim,
+//	const Dtype threshold, const Dtype* norm, Dtype* gradient ){
+//	CUDA_KERNEL_LOOP(index, count) {
+//		const int batchIdx = index % (class_size * class_dim);
+//
+//		if (norm[batchIdx] > threshold){
+//			gradient[index] = threshold / norm[index] * gradient[index];
+//		}
+//	}
+//}
+//
+//template <typename Dtype>
+//__global__ void kernel_gradient_norm(const int count,
+//	const int batch_size, const int class_size, const int class_dim,
+//	const Dtype *squre, Dtype *norm){
+//	CUDA_KERNEL_LOOP(index, count) {
+//		const int batchidx = index;
+//
+//		Dtype sum = 0;
+//		for (int i = 0; i < class_dim * class_size; i++){
+//			sum += squre[batchidx * (class_dim * class_size) + i];
+//		}
+//		norm[batchidx] = sqrt(sum);
+//	}
+//}
 
-		if (nrom[batchIdx] > threshold){
-			gradient[index] = threshold / norm[index] * gradient[index];
+template <typename Dtype>
+__global__ void kernel_inexp_x(const int count,
+	const int param_size, const int class_size, const int data_dim,
+	const Dtype* norm, const Dtype* data, Dtype* alpha_pi_x){
+	CUDA_KERNEL_LOOP(index, count) {
+		const Dtype epsilon = 0.00001;
+		Dtype alpha = data[index*param_size];
+		Dtype sigma = data[index*param_size + 1 + data_dim];
+		alpha_pi_x[index] = log(alpha + epsilon) - data_dim / 2 * log(2 * MATH_PI*sigma + epsilon) - norm[index] / 2 / sigma;
+	}
+}
+
+template <typename Dtype>
+__global__ void kernel_max_inexp(const int count, 
+	const int batch_size, const int class_size,
+	const Dtype* alpha_pi_x, Dtype* max){
+	CUDA_KERNEL_LOOP(index, count) {
+		max[index] = -FLT_MAX;
+		for (int i = 0; i < class_size; i++){
+			if (max[index] < alpha_pi_x[index*class_size + i])
+				max[index] = alpha_pi_x[index*class_size + i];
 		}
+	}
+}
+
+template <typename Dtype>
+__global__ void kernel_sub_inexp_m(const int count,
+	const int batch_size, const int class_size,
+	const Dtype * max, Dtype *alpha_pi_x){
+	CUDA_KERNEL_LOOP(index, count) {
+		int batch_idx = index / class_size;
+		alpha_pi_x[index] = exp(alpha_pi_x[index] - max[batch_idx]);
+	}
+}
+
+template <typename Dtype>
+__global__ void kernel_calc_inexp_loss(const int count,
+	const int batch_size, const int class_size,
+	const Dtype *max, const Dtype *alpha_pi_x, Dtype *alpha_pi_x_sum, Dtype *batch_loss){
+	CUDA_KERNEL_LOOP(index, count) {
+		alpha_pi_x_sum[index] = 0;	//¢²e^(x-m)
+		for (int i = 0; i < 5; i++){
+			alpha_pi_x_sum[index] += alpha_pi_x[class_size * index + i];
+		}
+		batch_loss[index] = max[index] + log(alpha_pi_x_sum[index]);
 	}
 }
 
@@ -131,16 +194,34 @@ void MDNLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		class_size, data_dim, diff_square_.gpu_data(), diff_norm_.mutable_gpu_data());
 
 	//calculate gaussian distribution
-	kernel_normal_distribution<Dtype> << <CAFFE_GET_BLOCKS(class_size * batch_size), CAFFE_CUDA_NUM_THREADS >> >(class_size * batch_size,
+	//kernel_normal_distribution<Dtype> << <CAFFE_GET_BLOCKS(class_size * batch_size), CAFFE_CUDA_NUM_THREADS >> >(class_size * batch_size,
+	//	data_dim + 2, class_size, data_dim,
+	//	diff_norm_.gpu_data(), bottom_data, alpha_pi_.mutable_gpu_data());
+
+	//find max_alpha_pi
+	//calc x
+	kernel_inexp_x<Dtype> << <CAFFE_GET_BLOCKS(class_size * batch_size), CAFFE_CUDA_NUM_THREADS >> >(class_size * batch_size,
 		data_dim + 2, class_size, data_dim,
 		diff_norm_.gpu_data(), bottom_data, alpha_pi_.mutable_gpu_data());
+	//find max
+	kernel_max_inexp<Dtype> << <CAFFE_GET_BLOCKS(batch_size), CAFFE_CUDA_NUM_THREADS >> >(batch_size,
+		class_size, data_dim,
+		alpha_pi_.gpu_data(), max_alpha_pi_.mutable_gpu_data());
+	//sub exp(x-m)
+	kernel_sub_inexp_m<Dtype> << <CAFFE_GET_BLOCKS(class_size * batch_size), CAFFE_CUDA_NUM_THREADS >> >(class_size * batch_size,
+		batch_size, class_size,
+		max_alpha_pi_.gpu_data(), alpha_pi_.mutable_gpu_data());
+	//calc loss
+	kernel_calc_inexp_loss<Dtype> << <CAFFE_GET_BLOCKS(batch_size), CAFFE_CUDA_NUM_THREADS >> >(batch_size,
+		batch_size, class_size,
+		max_alpha_pi_.gpu_data(), alpha_pi_.gpu_data(), alpha_pi_sum_.mutable_gpu_data(), batch_loss_.mutable_gpu_data());
 
 	//sumation : ¢²(alpha * distribution)
-	kernel_class_summation<Dtype> << <CAFFE_GET_BLOCKS(batch_size), CAFFE_CUDA_NUM_THREADS >> >(batch_size, class_size, alpha_pi_.gpu_data(), alpha_pi_sum_.mutable_gpu_data());
+	//kernel_class_summation<Dtype> << <CAFFE_GET_BLOCKS(batch_size), CAFFE_CUDA_NUM_THREADS >> >(batch_size, class_size, alpha_pi_.gpu_data(), alpha_pi_sum_.mutable_gpu_data());
 
 	//loss : ln ( sumation ) / number of batchsize
 	Dtype loss;
-	caffe_gpu_log(alpha_pi_sum_.count(), alpha_pi_sum_.gpu_data(), batch_loss_.mutable_gpu_data());
+	//caffe_gpu_log(alpha_pi_sum_.count(), alpha_pi_sum_.gpu_data(), batch_loss_.mutable_gpu_data());
 	caffe_gpu_dot(batch_loss_.count(), batch_loss_.gpu_data(), sum_multiplier_.gpu_data(), &loss);
 	loss /= bottom[0]->num();
 	top[0]->mutable_cpu_data()[0] = -loss;
@@ -266,41 +347,6 @@ void MDNLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 				batch_size, class_size, data_dim + 2, data_dim, sigma_min, sigma_max,
 				posterior_pi_.gpu_data(), diff_.gpu_data(), diff_norm_.gpu_data(), bottom_data, bottom_diff);
 			
-			//gradient cliping
-			if (grad_clip > 0){
-				//gradient cliping
-				caffe_gpu_mul(bottom[i]->count(), bottom[i]->gpu_diff(), bottom[i]->gpu_diff(), grad_norm.mutable_gpu_data());
-			}
-
-			/*if (log_limit < 100){
-				Dtype grad_norm_val = 0;
-				log_limit++;
-				caffe_gpu_mul(bottom[i]->count(), bottom[i]->gpu_diff(), bottom[i]->gpu_diff(), grad_norm.mutable_gpu_data());
-				for (int i = 0; i < 128; i++){
-					Dtype tempGrad[55];
-					Dtype sumgrad = 0;
-					cudaMemcpy(tempGrad, &grad_norm.gpu_data()[55 * i], sizeof(Dtype) * 55, cudaMemcpyDeviceToHost);
-					for (int j = 0; j < 55; j++){
-						sumgrad += tempGrad[j];
-					}
-					grad_norm_val += sqrt(sumgrad);
-				}
-
-				FILE *fp = NULL;
-				if (log_limit == 1)
-					fp = fopen("grad.txt", "w");
-				else
-					fp = fopen("grad.txt", "a");
-
-				fprintf(fp, "%f\n", grad_norm_val / (float)batch_size);
-				total += grad_norm_val / (float)batch_size;
-
-				fclose(fp);
-			}
-			else{
-				printf("END\n");
-				printf("%f\n", total / 100.f);
-			}*/
 		}
 	}
 }

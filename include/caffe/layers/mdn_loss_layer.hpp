@@ -41,10 +41,10 @@ namespace caffe {
 		float sigma_min;
 		float sigma_max;
 		bool visualize_;
-		Dtype grad_clip;
-
-		int log_limit = 0;
-		Dtype total = 0;
+		
+		//Dtype grad_clip;
+		//int log_limit = 0;
+		//Dtype total = 0;
 
 		Blob<Dtype> diff_;					//(mu-t)
 		Blob<Dtype> diff_square_;			//(mu-t)^2
@@ -54,8 +54,9 @@ namespace caffe {
 		Blob<Dtype> batch_loss_;			//each batch loss
 		Blob<Dtype> sum_multiplier_;		//dot product summation
 		Blob<Dtype> posterior_pi_;			//posterior probability
+		Blob<Dtype> max_alpha_pi_;
 
-		Blob<Dtype> grad_norm;				//gradient_norm(debug)
+		//Blob<Dtype> grad_norm;				//gradient_norm(debug)
 	};
 
 }  // namespace caffe
