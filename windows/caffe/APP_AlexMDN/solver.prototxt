@@ -3,14 +3,14 @@ test_iter: 10
 test_interval: 1000
 test_initialization: false
 
-base_lr: 0.001
+base_lr: 0.00001
 lr_policy: "inv"
 gamma: 0.000001
 power: 0.75
 display: 10
 max_iter: 600000
-momentum: 0.9
-weight_decay: 0.0005
+#momentum: 0.9
+#weight_decay: 0.0005
 snapshot: 10000
 snapshot_prefix: "APP_AlexMDN/snapshot/APP_AlexMDN"
 solver_mode: GPU

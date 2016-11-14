@@ -42,6 +42,8 @@ void MDNLossLayer<Dtype>::Reshape(
   diff_norm_.Reshape(class_dim);
   alpha_pi_.Reshape(class_dim);
   posterior_pi_.Reshape(class_dim);
+  x_m_.Reshape(class_dim);
+  x_.Reshape(class_dim);
 
   vector<int> batch_dim(1);
   batch_dim[0] = bottom[0]->shape()[0];

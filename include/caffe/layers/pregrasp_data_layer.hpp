@@ -57,9 +57,8 @@ namespace caffe {
 
 		void PreGrasp_DataLoadAll(const char* datapath);
 		bool fileTypeCheck(char *fileName);
-		void makeRandbox(int *arr, int size);
-		void LoadFuc(int totalThread, int id);
-		bool comp(const FilePath& s1, const FilePath& s2);
+		void LoadFuc();
+		void ReadFuc(FilePath src);
 
 		int batch_size_, channels_, height_, width_, size_;
 		int n_;
@@ -70,18 +69,11 @@ namespace caffe {
 		std::list<cv::Mat> image_blob;						//rgb image
 		std::list<cv::Mat> depth_blob;						//distance
 		std::list<cv::Mat> ang_blob;			//pregrasping pos (image idx, pos)
-		std::list<cv::Mat> label_blob;
 
 		std::vector<FilePath> FileList;
-		std::vector<FilePath> BatchList;
 
 		std::mutex idx_mtx, save_mtx;
-		std::thread LoadThread[4];
-		int ThreadCount;
-		bool stop_thread;
-
-		int *randbox;
-		int dataidx;
+		std::thread LoadThread;
 	};
 
 }  // namespace caffe

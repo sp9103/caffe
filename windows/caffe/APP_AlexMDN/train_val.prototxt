@@ -31,7 +31,7 @@ layer {
     height : 250
     width : 400
     data_path : "E:/Approach_data"
-    #data_limit : 2000
+    data_limit : 5000
 
   }
 }

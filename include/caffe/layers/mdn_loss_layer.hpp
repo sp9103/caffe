@@ -41,8 +41,10 @@ namespace caffe {
 		float sigma_min;
 		float sigma_max;
 		bool visualize_;
+
+		int loop_count = 0;
 		
-		//Dtype grad_clip;
+		//Dtype grad_clip;z
 		//int log_limit = 0;
 		//Dtype total = 0;
 
@@ -55,6 +57,8 @@ namespace caffe {
 		Blob<Dtype> sum_multiplier_;		//dot product summation
 		Blob<Dtype> posterior_pi_;			//posterior probability
 		Blob<Dtype> max_alpha_pi_;
+		Blob<Dtype> x_m_;
+		Blob<Dtype> x_;
 
 		//Blob<Dtype> grad_norm;				//gradient_norm(debug)
 	};

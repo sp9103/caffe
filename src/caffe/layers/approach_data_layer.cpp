@@ -218,6 +218,8 @@ namespace caffe {
 						tempPath.ang_path = appAngleFile;
 
 						FileList.push_back(tempPath);
+						if (data_limit_ < FileList.size() && data_limit_ > 0)
+							return;
 					}
 				}
 			}
@@ -298,9 +300,15 @@ namespace caffe {
 		cv::Mat angMat(9, 1, CV_32FC1);
 		cv::Mat labelMat(9, 1, CV_32FC1);
 		int angBox[9];
+		int inv = 1;
 		bool angError = false;
 		for (int i = 0; i < 9; i++){
 			fscanf(fp, "%d", &angBox[i]);
+			if (i == 1)
+				if (angBox[i] < 0)
+					inv = -1;
+			if (i > 1)
+				angBox[i] *= inv;
 			angMat.at<float>(i) = (float)angBox[i] / angle_max[i] * 180.f / 100.f;
 			labelMat.at<float>(i) = angMat.at<float>(i);
 			if (angBox[i] >= 250950 || angBox[i] <= -250950){
