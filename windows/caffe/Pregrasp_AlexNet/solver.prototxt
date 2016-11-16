@@ -12,5 +12,5 @@ max_iter: 600000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 10000
-snapshot_prefix: "Pregrasp_AlexNet/snapshot_pregrasp_alexnet/Pregrasp_AlexNet"
+snapshot_prefix: "Pregrasp_AlexNet/snapshot_1115/Pregrasp_AlexNet"
 solver_mode: GPU

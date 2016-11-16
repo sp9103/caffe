@@ -397,7 +397,7 @@ int main(int argc, char** argv) {
 	//	"--weights=IK_spatial/vision_layer.caffemodel", "--gpu=all" };
 	///////////////////////////////////////////////////////////////////APP_NET////////////////////////////////////////////////////////////////////////////////////////
 	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
-		"--snapshot=APP_AlexMDN/snapshot/APP_AlexMDN_iter_4055.solverstate", "--gpu=all" };
+		"--snapshot=APP_AlexMDN/snapshot/APP_AlexMDN_iter_20000.solverstate", "--gpu=all" };
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
 	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

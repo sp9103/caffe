@@ -22,9 +22,9 @@ public:
 
 private:
 	typedef struct filepath_{
-		std::string rgbpath;
-		std::string depthpath;
-		std::string angpath;
+		char rgbpath[256];
+		char depthpath[256];
+		char angpath[256];
 	}FilePath;
 
 	std::vector<FilePath> FileList;

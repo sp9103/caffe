@@ -5,23 +5,26 @@
 #include "Robot\RobotManager.h"
 #include "Kinect\KinectMangerThread.h"
 
-#define APPROACH_NET_PATH "Model\\Approaching\\deploy_approaching.prototxt"
-#define APPROACH_NET_TRAINRESULT "Model\\Approaching\\APP_AlexNet_iter_70000.caffemodel"
-#define PREGRASP_NET_PATH "Model\\Pregrasping\\deploy_pregrasp.prototxt"
-#define PREGRASP_NET_TRAINRESULT "Model\\Pregrasping\\Pregrasp_AlexNet_iter_61005.caffemodel"
+#define APPROACH_NET_PATH "..\\caffe\\APP_AlexMDN\\deploy_approach.prototxt"
+//Approach net weight file path
+#define APPROACH_NET_TRAINRESULT "..\\caffe\\APP_AlexMDN\\snapshot\\APP_AlexMDN_iter_33030.caffemodel"
+#define PREGRASP_NET_PATH "..\\caffe\\Pregrasp_AlexNet\\deploy_pregrasp.prototxt"
+//Pregrasp net weight file path
+#define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1115\\Pregrasp_AlexNet_iter_41084.caffemodel"
 
 using namespace caffe;
 
 void resultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst);
+void MDNresultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst);
 void rgbConvertCaffeType(cv::Mat src, cv::Mat *dst);
 void depthVis(cv::Mat src, char* windowName);
 int calcMaxDiff(int *src1, int*src2);
 
 int main(){
 	//0-1. Kinect Initialize
-	int width = 240;
-	int height = 200;
-	cv::Rect				RobotROI((KINECT_DEPTH_WIDTH - width) / 2, (KINECT_DEPTH_HEIGHT - height) / 2, width, height);
+	int width = WIDTH;
+	int height = HEIGHT;
+	cv::Rect				RobotROI((KINECT_DEPTH_WIDTH - width) / 2, (KINECT_DEPTH_HEIGHT - height) / 2 + 20, width, height);
 	KinectMangerThread		kinect;
 	kinect.Initialize(RobotROI);
 
@@ -71,27 +74,32 @@ int main(){
 		char key = cv::waitKey(10);
 
 		if (key == 's'){
-			//Approaching network
-			//Mat -> Blob
-			cv::cvtColor(kinectRGB, kinectRGB, CV_BGRA2BGR);
-			cv::Mat caffeRgb;
-			rgbConvertCaffeType(kinectRGB, &caffeRgb);
-			memcpy(rgbBlob.mutable_cpu_data(), caffeRgb.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH * CHANNEL);
-			memcpy(depthBlob.mutable_cpu_data(), kinectDEPTH.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH);
-			vector<Blob<float>*> input_vec;				//입력 RGB, DEPTH
-			input_vec.push_back(&rgbBlob);
-			input_vec.push_back(&depthBlob);
 
-			//Approaching
-			const vector<Blob<float>*>& result_approach = approach_net.Forward(input_vec, &loss);
-			resultToRobotMotion(result_approach, robotMotion);
-			printf("if u want move, press any key to console\n");
+			robot.TorqueOff();
 			getch();
-			robot.Approaching(robotMotion);
-			printf("if motion end, press any key\n");
-			//robot.FingerTorqueOff();
-			getch();
-			//robot.FingerTorqueOn();
+			robot.TorqueOn();
+
+			////Approaching network
+			////Mat -> Blob
+			//cv::cvtColor(kinectRGB, kinectRGB, CV_BGRA2BGR);
+			cv::Mat caffeRgb;
+			//rgbConvertCaffeType(kinectRGB, &caffeRgb);
+			//memcpy(rgbBlob.mutable_cpu_data(), caffeRgb.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH * CHANNEL);
+			//memcpy(depthBlob.mutable_cpu_data(), kinectDEPTH.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH);
+			vector<Blob<float>*> input_vec;				//입력 RGB, DEPTH
+			//input_vec.push_back(&rgbBlob);
+			//input_vec.push_back(&depthBlob);
+
+			////Approaching
+			//const vector<Blob<float>*>& result_approach = approach_net.Forward(input_vec, &loss);
+			//MDNresultToRobotMotion(result_approach, robotMotion);
+			//printf("if u want move, press any key to console\n");
+			//getch();
+			//robot.Approaching(robotMotion);
+			//printf("if motion end, press any key\n");
+			////robot.FingerTorqueOff();
+			//getch();
+			////robot.FingerTorqueOn();
 
 			//Pregrasp
 			while (1){
@@ -154,6 +162,30 @@ void resultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst){
 	memcpy(outputData, src.at(0)->cpu_data(), sizeof(float) * 9);
 	for (int j = 0; j < DATADIM; j++){
 		dst[j] = (int)(outputData[j] / 180.f * angle_max[j]);
+	}
+}
+
+void MDNresultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst){
+	const int class_size = 5;
+	int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
+	float outputData[55];
+	memcpy(outputData, src.at(0)->cpu_data(), sizeof(float) * 55);
+	float alphaMax = -1.f;
+	for (int c = 0; c < 5; c++){
+		float alpha = outputData[11*c];
+		float tempOutput[11];
+		memcpy(tempOutput, &outputData[11 * c], sizeof(float) * 11);
+
+		if (alphaMax < alpha){
+			alphaMax = alpha;
+			float inv = 1.f;
+			for (int j = 0; j < DATADIM; j++){
+				dst[j] = (int)(tempOutput[j+1] / 180.f * angle_max[j] * 100.f) * inv;
+
+				if (j == 1 && tempOutput[j + 1] < 0)
+					inv *= -1.f;
+			}
+		}
 	}
 }
 

@@ -21,7 +21,7 @@ void MOGbasedTracker::InsertBackGround(cv::Mat Color, cv::Mat Depth){
 
 	cv::Mat tempFore;
 	mog2.set("nmixtures", 2);
-	mog2.setDouble("varThreshold", 300.f);
+	mog2.setDouble("varThreshold", 100.f);
 	mog2.operator()(ColorBackGround, tempFore);
 }
 
@@ -61,6 +61,9 @@ cv::Mat MOGbasedTracker::calcImage(cv::Mat src, cv::Mat depth, cv::Mat *dstColor
 	cv::Mat MapSub = DeleteSub(redMap, backsub);
 	_blobLabeling.Labeling(50, MapSub);
 
+	//cv::imshow("backsub", backsub);
+	//cv::imshow("MapSub", MapSub);
+
 	//Calculate Object Image
 	std::vector<std::pair<std::vector<cv::Point2i>, cv::Rect>> BOI;		//blob of interest
 	FindBlob(&BOI);
@@ -68,13 +71,6 @@ cv::Mat MOGbasedTracker::calcImage(cv::Mat src, cv::Mat depth, cv::Mat *dstColor
 	cv::Mat src2 = drawBlobMap(src, BOI);
 	output = colorCompose(src, bin);
 	cv::Mat depthOutput = depthCompose(depth, bin);
-
-	//cv::imshow("src2", src2);
-	//cv::imshow("backsub", backsub);
-	//cv::imshow("redmap", redMap);
-	//cv::imshow("Mapsub", MapSub);
-	//cv::imshow("bin", bin);
-	//cv::waitKey(0);
 	
 	if (dstColor != NULL)
 		*dstColor = output.clone();
@@ -131,7 +127,7 @@ cv::Mat MOGbasedTracker::DetectColorMap(cv::Mat rgb, cv::Mat subMap){
 	}
 
 	cv::erode(output, output, cv::Mat(), cv::Point(-1, -1), 2);
-	cv::dilate(output, output, cv::Mat(), cv::Point(-1, -1), 9);
+	cv::dilate(output, output, cv::Mat(), cv::Point(-1, -1), 11);
 	//cv::erode(output, output, cv::Mat(), cv::Point(-1, -1), 3);
 
 	return output;
@@ -161,9 +157,9 @@ cv::Mat MOGbasedTracker::subBackground(cv::Mat srcColor, cv::Mat srcDepth){
 	mog2.operator()(srcColor, fore, 0.0f);
 	//cv::imshow("fore", fore);
 
-	cv::Mat binMask(160, 160, CV_8UC1);
-	for (int h = 0; h < 160; h++){
-		for (int w = 0; w < 160; w++){
+	cv::Mat binMask(srcColor.rows, srcColor.cols, CV_8UC1);
+	for (int h = 0; h < srcColor.rows; h++){
+		for (int w = 0; w < srcColor.cols; w++){
 			if (fore.at<uchar>(h, w) == 255)
 				binMask.at<uchar>(h, w) = 255;
 			else
@@ -171,8 +167,8 @@ cv::Mat MOGbasedTracker::subBackground(cv::Mat srcColor, cv::Mat srcDepth){
 		}
 	}
 
-	for (int h = 0; h < 160; h++){
-		for (int w = 0; w < 160; w++){
+	for (int h = 0; h < srcColor.rows; h++){
+		for (int w = 0; w < srcColor.cols; w++){
 			uchar binVal = binMask.at<uchar>(h, w);
 			if (binVal != 0){
 				float val = abs(srcDepth.at<float>(h, w) - DepthBackGround.at<float>(h, w));

@@ -64,7 +64,7 @@ void Pregrasp_Data_Loader::LoadDataAll(char *RootPath){
 				strcat(rgbImgFile, ProcFileName);
 
 				//3.depth 읽어오기
-				sprintf(DepthFile, "%s\\DEPTHMAP2\\%s", tBuf, ProcFileName);
+				sprintf(DepthFile, "%s\\PROCDEPTH2\\%s", tBuf, ProcFileName);
 				int depthwidth, depthheight, depthType;
 				filePathLen = strlen(DepthFile);
 				DepthFile[filePathLen - 1] = 'n';
@@ -73,16 +73,16 @@ void Pregrasp_Data_Loader::LoadDataAll(char *RootPath){
 
 				char AnglePath[256];
 				TCHAR szAngleDir[MAX_PATH] = { 0, };
-				sprintf(AnglePath, "%s\\ANGLE\\%s", tBuf, ProcFileName);
+				sprintf(AnglePath, "%s\\ANGLE2\\%s", tBuf, ProcFileName);
 				filePathLen = strlen(AnglePath);
 				AnglePath[filePathLen - 1] = 't';
 				AnglePath[filePathLen - 2] = 'x';
 				AnglePath[filePathLen - 3] = 't';
 
 				FilePath tempPath;
-				tempPath.angpath = AnglePath;
-				tempPath.depthpath = DepthFile;
-				tempPath.rgbpath = rgbImgFile;
+				strcpy(tempPath.angpath, AnglePath);
+				strcpy(tempPath.depthpath, DepthFile);
+				strcpy(tempPath.rgbpath, rgbImgFile);
 
 				FileList.push_back(tempPath);
 			}
@@ -96,7 +96,8 @@ void Pregrasp_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *rgbori
 	rgbori->release();
 
 	int height_, width_;
-	height_ = width_ = 160;
+	height_ = 250;
+	width_ = 400;
 
 	FilePath tempPath = FileList.at(idx);
 	//rgb
@@ -111,11 +112,11 @@ void Pregrasp_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *rgbori
 	}
 
 	int depthwidth, depthheight, depthType;
-	FILE *fp = fopen(tempPath.depthpath.c_str(), "rb");
+	FILE *fp = fopen(tempPath.depthpath, "rb");
 	fread(&depthwidth, sizeof(int), 1, fp);
 	fread(&depthheight, sizeof(int), 1, fp);
 	fread(&depthType, sizeof(int), 1, fp);
-	cv::Mat depthMap(depthheight, depthwidth, depthType);
+	cv::Mat depthMap(depthwidth, depthheight, depthType);
 	for (int i = 0; i < depthMap.rows * depthMap.cols; i++)		fread(&depthMap.at<float>(i), sizeof(float), 1, fp);
 	fclose(fp);
 

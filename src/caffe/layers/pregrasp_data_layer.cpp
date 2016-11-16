@@ -110,6 +110,7 @@ namespace caffe {
 	void PreGraspDataLayer<Dtype>::PreGrasp_DataLoadAll(const char* datapath){
 		WIN32_FIND_DATA ffd;
 		HANDLE hFind = INVALID_HANDLE_VALUE;
+		FILE *idxsetfp;
 		TCHAR szDir[MAX_PATH] = { 0, };
 
 		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, datapath, strlen(datapath), szDir, MAX_PATH);
@@ -134,7 +135,7 @@ namespace caffe {
 			if (ccFileName[0] != '.'){
 				char idxsetPath[256];
 				sprintf(idxsetPath, "%s\\trajSet.txt", tBuf);
-				FILE *idxsetfp = fopen(idxsetPath, "r");
+				idxsetfp = fopen(idxsetPath, "r");
 				if (idxsetfp == NULL)
 					continue;
 
@@ -147,15 +148,33 @@ namespace caffe {
 					sprintf(imgPath, "%s\\PROCESSIMG\\%d.bmp", tBuf, imgIdx);
 					sprintf(angPath, "%s\\ANGLE\\%d.txt", tBuf, angIdx);
 					sprintf(depthPath, "%s\\PROCDEPTH\\%d.bin", tBuf, imgIdx);
+
+					/*FILE *ang_file = fopen(angPath, "r");
+					if (ang_file == NULL){
+						continue;
+					}
+					for (int i = 0; i < 9; i++){
+						fscanf(ang_file, "%d\n", &tempPath.ang[i]);
+					}
+					fclose(ang_file);*/
+
 					tempPath.image_path = imgPath;
 					tempPath.depth_path = depthPath;
 					tempPath.ang_path = angPath;
 
 					FileList.push_back(tempPath);
+
+					if (FileList.size() > data_limit_ && data_limit_ != 0)
+						break;
 				}
 				fclose(idxsetfp);
+
+				if (FileList.size() > data_limit_ && data_limit_ != 0)
+					return;
 			}
 		}
+
+		if (idxsetfp != NULL)		fclose(idxsetfp);
 	}
 
 	template <typename Dtype>
@@ -233,15 +252,9 @@ namespace caffe {
 		cv::Mat angMat(9, 1, CV_32FC1);
 		cv::Mat labelMat(9, 1, CV_32FC1);
 		int angBox[9];
-		int inv = 1;
 		bool angError = false;
 		for (int i = 0; i < 9; i++){
 			fscanf(fp, "%d", &angBox[i]);
-			if (i == 1)
-				if (angBox[i] < 0)
-					inv = -1;
-			if (i > 1)
-				angBox[i] *= inv;
 			angMat.at<float>(i) = (float)angBox[i] / angle_max[i] * 180.f;
 			labelMat.at<float>(i) = angMat.at<float>(i);
 			if (angBox[i] >= 250950 || angBox[i] <= -250950){

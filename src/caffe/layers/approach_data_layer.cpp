@@ -298,7 +298,7 @@ namespace caffe {
 		if (fp == NULL)
 			return;
 		cv::Mat angMat(9, 1, CV_32FC1);
-		cv::Mat labelMat(9, 1, CV_32FC1);
+		float labelBox[9];
 		int angBox[9];
 		int inv = 1;
 		bool angError = false;
@@ -310,7 +310,7 @@ namespace caffe {
 			if (i > 1)
 				angBox[i] *= inv;
 			angMat.at<float>(i) = (float)angBox[i] / angle_max[i] * 180.f / 100.f;
-			labelMat.at<float>(i) = angMat.at<float>(i);
+			labelBox[i] = angMat.at<float>(i);
 			if (angBox[i] >= 250950 || angBox[i] <= -250950){
 				angError = true;
 				break;

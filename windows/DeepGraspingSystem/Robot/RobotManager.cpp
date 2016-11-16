@@ -130,10 +130,11 @@ void RobotManager::Approaching(int *pos){
 	if (pos[1] < -152820)	pos[1] = -152820;
 	
 	////////////////////////////
-	pos[NUM_JOINT] = 2647;
-	pos[NUM_JOINT + 1] = 1437;
-	pos[NUM_JOINT + 2] = 1972;
+	pos[NUM_JOINT] = 2930;
+	pos[NUM_JOINT + 1] = 1120;
+	pos[NUM_JOINT + 2] = 1659;
 	////////////////////////////
+	// 2634 1447 1993
 
 	arm.SetFingerPosition(&pos[NUM_JOINT]);
 	arm.safeMovePose(pos);

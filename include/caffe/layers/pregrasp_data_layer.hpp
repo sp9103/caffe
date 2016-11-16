@@ -52,7 +52,6 @@ namespace caffe {
 			std::string image_path;
 			std::string depth_path;
 			std::string ang_path;
-			int id;
 		}FilePath;
 
 		void PreGrasp_DataLoadAll(const char* datapath);
