@@ -390,19 +390,19 @@ RegisterBrewFunction(time);
 int main(int argc, char** argv) {
 	/////////////////////////////////////////////////////////////////IK_AlexNet//////////////////////////////////////////////////////////////////////////////////////////
 	int targc = 5;
-	/*char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_AlexNet/solver.prototxt",
-		"--weights=IK_AlexNet/snapshot_1104/IK_AlexNet_iter_20000.caffemodeL", "--gpu=all" };*/
+	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_AlexNet/solver.prototxt",
+		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_spatial/solver_fc.prototxt",
 	//	"--weights=IK_spatial/vision_layer.caffemodel", "--gpu=all" };
 	///////////////////////////////////////////////////////////////////APP_NET////////////////////////////////////////////////////////////////////////////////////////
-	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
-		"--snapshot=APP_AlexMDN/snapshot/APP_AlexMDN_iter_20000.solverstate", "--gpu=all" };
+	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
+	//	"--snapshot=APP_AlexMDN/snapshot/APP_AlexMDN_iter_20000.solverstate", "--gpu=all" };
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
 	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Pregrasp_AlexNet/solver.prototxt",
-	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
+	//	"--weights=Pregrasp_AlexNet/snapshot_1115/Pregrasp_AlexNet_iter_40000.caffemodel", "--gpu=all" };
 
 	char **argvp;
 	argvp = &targv[0];

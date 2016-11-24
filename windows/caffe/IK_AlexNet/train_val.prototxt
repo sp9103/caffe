@@ -13,7 +13,7 @@ layer {
     channels: 3
     height : 250
     width : 400
-    data_path : "E:/IK_data/TRAIN"
+    data_path : "G:/IK_backup"
   }
 }
 layer {
@@ -30,7 +30,7 @@ layer {
     channels: 3
     height : 250
     width : 400
-    data_path : "E:/IK_data/TEST"
+    data_path : "G:/IK_backup"
     #data_limit : 2000
 
   }

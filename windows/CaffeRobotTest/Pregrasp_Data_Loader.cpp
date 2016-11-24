@@ -40,7 +40,7 @@ void Pregrasp_Data_Loader::LoadDataAll(char *RootPath){
 			HANDLE hDataFind = INVALID_HANDLE_VALUE;
 			char procDir[256];
 			strcpy(procDir, tBuf);
-			strcat(procDir, "\\PROCESSIMG2\\*");
+			strcat(procDir, "\\PROCESSIMG\\*");
 			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, procDir, strlen(procDir), szProcDir, MAX_PATH);
 			hDataFind = FindFirstFile(szProcDir, &class_ffd);
 
@@ -64,7 +64,7 @@ void Pregrasp_Data_Loader::LoadDataAll(char *RootPath){
 				strcat(rgbImgFile, ProcFileName);
 
 				//3.depth 읽어오기
-				sprintf(DepthFile, "%s\\PROCDEPTH2\\%s", tBuf, ProcFileName);
+				sprintf(DepthFile, "%s\\PROCDEPTH\\%s", tBuf, ProcFileName);
 				int depthwidth, depthheight, depthType;
 				filePathLen = strlen(DepthFile);
 				DepthFile[filePathLen - 1] = 'n';
@@ -73,7 +73,7 @@ void Pregrasp_Data_Loader::LoadDataAll(char *RootPath){
 
 				char AnglePath[256];
 				TCHAR szAngleDir[MAX_PATH] = { 0, };
-				sprintf(AnglePath, "%s\\ANGLE2\\%s", tBuf, ProcFileName);
+				sprintf(AnglePath, "%s\\ANGLE\\%s", tBuf, ProcFileName);
 				filePathLen = strlen(AnglePath);
 				AnglePath[filePathLen - 1] = 't';
 				AnglePath[filePathLen - 2] = 'x';

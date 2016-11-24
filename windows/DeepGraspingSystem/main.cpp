@@ -10,7 +10,8 @@
 #define APPROACH_NET_TRAINRESULT "..\\caffe\\APP_AlexMDN\\snapshot\\APP_AlexMDN_iter_33030.caffemodel"
 #define PREGRASP_NET_PATH "..\\caffe\\Pregrasp_AlexNet\\deploy_pregrasp.prototxt"
 //Pregrasp net weight file path
-#define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1115\\Pregrasp_AlexNet_iter_41084.caffemodel"
+#define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1118\\Pregrasp_AlexNet_iter_23368.caffemodel"
+//#define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1115\\Pregrasp_AlexNet_iter_41084.caffemodel"
 
 using namespace caffe;
 
@@ -18,7 +19,7 @@ void resultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst);
 void MDNresultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst);
 void rgbConvertCaffeType(cv::Mat src, cv::Mat *dst);
 void depthVis(cv::Mat src, char* windowName);
-int calcMaxDiff(int *src1, int*src2);
+float calcMaxDiff(int *src1, int*src2);
 
 int main(){
 	//0-1. Kinect Initialize
@@ -75,31 +76,23 @@ int main(){
 
 		if (key == 's'){
 
-			robot.TorqueOff();
-			getch();
-			robot.TorqueOn();
-
 			////Approaching network
 			////Mat -> Blob
-			//cv::cvtColor(kinectRGB, kinectRGB, CV_BGRA2BGR);
+			cv::cvtColor(kinectRGB, kinectRGB, CV_BGRA2BGR);
 			cv::Mat caffeRgb;
-			//rgbConvertCaffeType(kinectRGB, &caffeRgb);
-			//memcpy(rgbBlob.mutable_cpu_data(), caffeRgb.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH * CHANNEL);
-			//memcpy(depthBlob.mutable_cpu_data(), kinectDEPTH.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH);
+			rgbConvertCaffeType(kinectRGB, &caffeRgb);
+			memcpy(rgbBlob.mutable_cpu_data(), caffeRgb.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH * CHANNEL);
+			memcpy(depthBlob.mutable_cpu_data(), kinectDEPTH.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH);
 			vector<Blob<float>*> input_vec;				//입력 RGB, DEPTH
-			//input_vec.push_back(&rgbBlob);
-			//input_vec.push_back(&depthBlob);
+			input_vec.push_back(&rgbBlob);
+			input_vec.push_back(&depthBlob);
 
 			////Approaching
-			//const vector<Blob<float>*>& result_approach = approach_net.Forward(input_vec, &loss);
-			//MDNresultToRobotMotion(result_approach, robotMotion);
-			//printf("if u want move, press any key to console\n");
-			//getch();
-			//robot.Approaching(robotMotion);
-			//printf("if motion end, press any key\n");
-			////robot.FingerTorqueOff();
-			//getch();
-			////robot.FingerTorqueOn();
+			const vector<Blob<float>*>& result_approach = approach_net.Forward(input_vec, &loss);
+			MDNresultToRobotMotion(result_approach, robotMotion);
+			robot.Approaching(robotMotion);
+			printf("if motion end, press any key\n");
+
 
 			//Pregrasp
 			while (1){
@@ -113,7 +106,7 @@ int main(){
 
 				depthVis(procDepth, "procDepth");
 				cv::imshow("procImg", procImg);
-				cv::waitKey(10);
+				char pregraspKey = cv::waitKey(10);
 				rgbConvertCaffeType(procImg, &caffeRgb);
 				memcpy(rgbBlob.mutable_cpu_data(), caffeRgb.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH * CHANNEL);
 				memcpy(depthBlob.mutable_cpu_data(), procDepth.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH);
@@ -124,9 +117,19 @@ int main(){
 
 				int presntState[NUM_XEL];
 				robot.getPresState(presntState);
-				int maxdiff = calcMaxDiff(robotMotion, presntState);
-				printf("max diff %d\n", maxdiff);
-				if (maxdiff < 900){
+				float maxdiff = calcMaxDiff(robotMotion, presntState);
+				printf("max diff %f\n", maxdiff);
+				if (robotMotion[1] < 0 && maxdiff < 2.f){
+					//실제 잡기.
+					robot.grasp();
+					break;
+				}
+				else if (robotMotion[1] > 0 && maxdiff < 2.f){
+					//실제 잡기.
+					robot.grasp();
+					break;
+				}
+				else if (pregraspKey == 27){
 					//실제 잡기.
 					robot.grasp();
 					break;
@@ -220,11 +223,12 @@ void depthVis(cv::Mat src, char* windowName){
 	cv::imshow(windowName, temp);
 }
 
-int calcMaxDiff(int *src1, int*src2){
-	int max = -1;
+float calcMaxDiff(int *src1, int*src2){
+	const int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
+	float max = -1;
 
 	for (int i = 0; i < NUM_XEL; i++){
-		int diff = abs(src1[i] - src2[i]);
+		float diff = (float)abs(src1[i] - src2[i]) / (float)angle_max[i] * 180;
 
 		if (max < diff)
 			max = diff;

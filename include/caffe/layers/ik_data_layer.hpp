@@ -57,7 +57,8 @@ namespace caffe {
 
 		void IK_DataLoadAll(const char* datapath);
 		bool fileTypeCheck(char *fileName);
-		void LoadFuc(int totalThread, int id);
+		void LoadFuc();
+		void ReadFuc(FilePath src);
 
 		int batch_size_, channels_, height_, width_, size_;
 		int n_;
@@ -71,15 +72,9 @@ namespace caffe {
 		std::list<cv::Mat> label_blob;
 
 		std::vector<FilePath> FileList;
-		std::vector<FilePath> BatchList;
 
-		std::mutex idx_mtx, save_mtx;
-		std::thread LoadThread[4];
-		int ThreadCount;
-		bool stop_thread;
-
-		int *randbox;
-		int dataidx;
+		std::mutex save_mtx;
+		std::thread LoadThread;
 	};
 
 }  // namespace caffe

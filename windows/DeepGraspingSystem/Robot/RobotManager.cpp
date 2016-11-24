@@ -19,7 +19,7 @@ RobotManager::~RobotManager()
 
 void RobotManager::ControllerInit(int PortNum, int BaudRateNum){
 	int robotid[] = { 1, 3, 5, 7, 9, 11, 13, 15, 17 };
-	int vel[] = { 2000, 2000, 2000, 2000, 2000, 2000, 50, 50, 50 };
+	int vel[] = { 3000, 3000, 3000, 3000, 3000, 3000, 50, 50, 50 };
 	arm.Init(PortNum, BaudRateNum, robotid);
 	arm.SetGoalVelocity(vel);
 }
@@ -130,7 +130,7 @@ void RobotManager::Approaching(int *pos){
 	if (pos[1] < -152820)	pos[1] = -152820;
 	
 	////////////////////////////
-	pos[NUM_JOINT] = 2930;
+	pos[NUM_JOINT] = 2900;
 	pos[NUM_JOINT + 1] = 1120;
 	pos[NUM_JOINT + 2] = 1659;
 	////////////////////////////
@@ -215,11 +215,12 @@ void RobotManager::grasp(){
 }
 
 void RobotManager::Lift(){
+	//plus 
 	int state[NUM_XEL];
-	int minus_state[NUM_XEL] = {-174179, 90749, 129225, 124307, -21859, 7878};
-	int plus_state[NUM_XEL] = {173381, 101874, -114895, 134769, 11564, 1580};
+	int plus_state[NUM_XEL] = { -128275, 90825, 113653, 141567, -17429, 15462 };
+	int minus_state[NUM_XEL] = { -117108, -90047, 127376, 141917, 23953, 16112 };
 	arm.GetPresPosition(state);
-	if (state[0] > 0){
+	if (state[1] > 0){
 		printf("-plus\n");
 		for (int i = 0; i < NUM_JOINT; i++)
 			state[i] = plus_state[i];

@@ -18,7 +18,7 @@
 //#define SOLVER "deploy_IK_Net_fc.prototxt"
 //#define TRAINRESULT "weight_fc\\IK_Net_iter_50000.caffemodel"
 #define SOLVER "deploy_val.prototxt"
-#define TRAINRESULT "..\\caffe\\IK_AlexNet\\snapshot_1104\\IK_AlexNet_iter_13471.caffemodel"
+#define TRAINRESULT "..\\caffe\\IK_AlexNet\\snapshot_1104\\IK_AlexNet_iter_8404.caffemodel"
 #define RIGHT_ARM_USE
 
 using namespace caffe;
@@ -97,7 +97,7 @@ void depthVis(cv::Mat src);
 //	caffe_test_net.CopyTrainedLayersFrom(TRAINRESULT);
 //
 //	IK_Data_Loader TestDataLoader;
-//	TestDataLoader.LoadDataAll(/*"D:\\self_supervisedData\\TEST"*/"E:\\IK_data\\TRAIN");
+//	TestDataLoader.LoadDataAll(/*"D:\\self_supervisedData\\TEST"*/"G:\\IK_Data\\SINGLE");
 //
 //	//Test & 통계 내기;
 //	Blob<float> rgbBlob(1, 3, HEIGHT, WIDTH);
@@ -208,7 +208,7 @@ void depthVis(cv::Mat src);
 //		tempResult.depth = depthImg.clone();
 //		result_vec.push_back(tempResult);
 //
-//		TestDataLoader.writeAngle(tempResult.ans, i);
+//		//TestDataLoader.writeAngle(tempResult.ans, i);
 //
 //		if (TotalmaxDist < tempNetResult.Dist)	TotalmaxDist = tempNetResult.Dist;
 //		if (TotalminDist > tempNetResult.Dist)	TotalminDist = tempNetResult.Dist;
@@ -492,7 +492,7 @@ int main(){
 	//Approach_Data_Loader dataLoader;
 	//dataLoader.LoadDataAll("E:\\Approach_data");
 	Pregrasp_Data_Loader dataLoader;
-	dataLoader.LoadDataAll("E:\\Pregrasp_data\\TRAIN\\post_proc_test");
+	dataLoader.LoadDataAll("M:\\Pregrasp_data_test\\TRAIN");
 
 		//simulator 구동
 	/*SimulatorControl simul;

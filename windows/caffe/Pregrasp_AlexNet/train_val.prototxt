@@ -13,7 +13,7 @@ layer {
     channels: 3
     height : 250
     width : 400
-    data_path : "M:/Pregrasp_data_test"
+    data_path : "M:/Pregrasp_data_test/TRAIN"
     #data_limit : 100000
   }
 }
@@ -31,7 +31,7 @@ layer {
     channels: 3
     height : 250
     width : 400
-    data_path : "M:/Pregrasp_data_test"
+    data_path : "M:/Pregrasp_data_test/TRAIN"
     data_limit : 5000
 
   }

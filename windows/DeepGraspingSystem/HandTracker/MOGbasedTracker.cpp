@@ -225,6 +225,7 @@ cv::Mat MOGbasedTracker::drawBlobMap(cv::Mat src, std::vector<std::pair<std::vec
 
 cv::Mat MOGbasedTracker::colorCompose(cv::Mat src, cv::Mat bin){
 	cv::Mat retMap = ColorBackGround.clone();
+	//cv::Mat retMap = cv::imread("backRGB.bmp");
 
 	for (int h = 0; h < bin.rows; h++){
 		for (int w = 0; w < bin.cols; w++){
@@ -238,6 +239,14 @@ cv::Mat MOGbasedTracker::colorCompose(cv::Mat src, cv::Mat bin){
 
 cv::Mat MOGbasedTracker::depthCompose(cv::Mat src, cv::Mat bin){
 	cv::Mat retMap = DepthBackGround.clone();
+	//FILE *fp = fopen("backDepth.bin", "rb");
+	//int depthwidth, depthheight, depthType;
+	/*fread(&depthheight, sizeof(int), 1, fp);
+	fread(&depthwidth, sizeof(int), 1, fp);
+	fread(&depthType, sizeof(int), 1, fp);*/
+	//cv::Mat retMap(depthheight, depthwidth, depthType);
+	/*for (int i = 0; i < retMap.rows * retMap.cols; i++)        fread(&retMap.at<float>(i), sizeof(float), 1, fp);
+	fclose(fp);*/
 
 	for (int h = 0; h < bin.rows; h++){
 		for (int w = 0; w < bin.cols; w++){
