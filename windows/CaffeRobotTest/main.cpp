@@ -5,8 +5,8 @@
 #include "ARMSDK\include\ARMSDK.h"
 #include "IK_Data_Loader.h"
 //#include "ListLoader.h"
-//#include "Approach_Data_Loader.h"
-#include "Pregrasp_Data_Loader.h"
+#include "Approach_Data_Loader.h"
+//#include "Pregrasp_Data_Loader.h"
 //#include "SimulatorControl.h"
 
 #define HEIGHT			250
@@ -18,7 +18,7 @@
 //#define SOLVER "deploy_IK_Net_fc.prototxt"
 //#define TRAINRESULT "weight_fc\\IK_Net_iter_50000.caffemodel"
 #define SOLVER "deploy_val.prototxt"
-#define TRAINRESULT "..\\caffe\\IK_AlexNet\\snapshot_1104\\IK_AlexNet_iter_8404.caffemodel"
+#define TRAINRESULT "..\\caffe\\IK_AlexNet\\snapshot_fine\\IK_AlexNet_iter_80000.caffemodel"
 #define RIGHT_ARM_USE
 
 using namespace caffe;
@@ -489,14 +489,39 @@ int main(){
 	Blob<float> depthBlob(1, 1, HEIGHT, WIDTH);
 
 	//data load
-	//Approach_Data_Loader dataLoader;
-	//dataLoader.LoadDataAll("E:\\Approach_data");
-	Pregrasp_Data_Loader dataLoader;
-	dataLoader.LoadDataAll("M:\\Pregrasp_data_test\\TRAIN");
+	Approach_Data_Loader dataLoader;
+	dataLoader.LoadDataAll("G:\\App_sp");
+	//Pregrasp_Data_Loader dataLoader;
+	//dataLoader.LoadDataAll("M:\\Pregrasp");
 
-		//simulator 구동
+	//simulator 구동
 	/*SimulatorControl simul;
 	simul.Initialize();*/
+
+	armsdk::RobotInfo robot;
+	armsdk::Kinematics kin;
+#ifdef RIGHT_ARM_USE
+	//RightArm
+	robot.AddJoint(0.0, ML_PI_2, 0.0, 0.0, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 1);
+	robot.AddJoint(0.0, -ML_PI_2, 0.0, 0.0, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 3);
+	robot.AddJoint(30.0, -ML_PI_2, 246.0, 0.0, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 5);
+	robot.AddJoint(-30.0, ML_PI_2, 0.0, ML_PI_2, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 7);
+	robot.AddJoint(0.0, -ML_PI_2, 216.0, 0.0, ML_PI, -ML_PI, 151875, -151875, ML_PI, -ML_PI, 9);
+	robot.AddJoint(0.0, ML_PI_2, 0.0, 0.0, ML_PI, -ML_PI, 151875, -151875, ML_PI, -ML_PI, 11);
+#elif defined LEFT_ARM_USE
+	//Leftarm
+	robot.AddJoint(0.0, -ML_PI_2, 0.0, 0.0, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 2);
+	robot.AddJoint(0.0, ML_PI_2, 0.0, 0.0, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 4);
+	robot.AddJoint(30.0, ML_PI_2, 246.0, 0.0, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 6);
+	robot.AddJoint(-30.0, -ML_PI_2, 0.0, -ML_PI_2, ML_PI, -ML_PI, 251000, -251000, ML_PI, -ML_PI, 8);
+	robot.AddJoint(0.0, ML_PI_2, 216.0, 0.0, ML_PI, -ML_PI, 151875, -151875, ML_PI, -ML_PI, 10);
+	robot.AddJoint(0.0, -ML_PI_2, 0.0, 0.0, ML_PI, -ML_PI, 151875, -151875, ML_PI, -ML_PI, 12);
+#endif
+	kin.InitRobot(&robot);
+
+	armsdk::Pose3D endeffectorNet;
+	vecd angd;
+	veci angi(6);
 
 	for (int i = 0; i < dataLoader.getCount(); i++){
 
@@ -517,7 +542,7 @@ int main(){
 		float loss, alphaMax = 0.0f;
 		const vector<Blob<float>*>& result = caffe_test_net.Forward(input_vec, &loss);
 
-		float outputData[9], outputAlphaMax[9];
+		float outputData[9], outputAlphaMax[12];
 		int rendData[9];
 		//if (abs(outputData[1]) )
 		memcpy(outputData, result.at(0)->cpu_data(), sizeof(float) * 9);
@@ -525,6 +550,14 @@ int main(){
 			outputAlphaMax[j] = outputData[j] / 180.f * angle_max[j];
 			rendData[j] = (int)outputAlphaMax[j];
 		}
+
+		for (int j = 0; j < 6; j++)	angi[j] = (int)outputAlphaMax[j];;
+		angd = kin.Value2Rad(angi);
+		kin.Forward(angd, &endeffectorNet);
+		
+		outputAlphaMax[9] = endeffectorNet.x;
+		outputAlphaMax[10] = endeffectorNet.y;
+		outputAlphaMax[11] = endeffectorNet.z;
 
 		dataLoader.writeAngleData(outputAlphaMax, i);
 		//cv::imshow("rgb", rgbori);

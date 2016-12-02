@@ -168,6 +168,7 @@ namespace caffe {
 						break;
 				}
 				fclose(idxsetfp);
+				printf("FileList size :%d\n", FileList.size());
 
 				if (FileList.size() > data_limit_ && data_limit_ != 0)
 					return;

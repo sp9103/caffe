@@ -143,6 +143,8 @@ void Approach_Data_Loader::getData(cv::Mat *rgb, cv::Mat *depth, cv::Mat *rgbOri
 	//rgb
 	cv::Mat img = cv::imread(tempPath.rgbpath);
 	cv::Mat tempdataMat(img.rows, img.cols, CV_32FC3);
+	if (img.rows == 0)
+		return;
 	height_ = img.rows;
 	width_ = img.cols;
 	for (int h = 0; h < img.rows; h++){
@@ -180,6 +182,9 @@ void Approach_Data_Loader::writeAngleData(float *ang, int idx){
 	FILE *fp = fopen(path.c_str(), "w");
 	for (int i = 0; i < 9; i++){
 		fprintf(fp, "%d\n", (int)ang[i]);
+	}
+	for (int i = 9; i < 12; i++){
+		fprintf(fp, "%f\n", ang[i]);
 	}
 	fclose(fp);
 	printf("%s\n", path.c_str());

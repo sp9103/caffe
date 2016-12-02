@@ -390,8 +390,8 @@ RegisterBrewFunction(time);
 int main(int argc, char** argv) {
 	/////////////////////////////////////////////////////////////////IK_AlexNet//////////////////////////////////////////////////////////////////////////////////////////
 	int targc = 5;
-	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_AlexNet/solver.prototxt",
-		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
+	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_AlexNet/solver.prototxt",
+	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=IK_spatial/solver_fc.prototxt",
 	//	"--weights=IK_spatial/vision_layer.caffemodel", "--gpu=all" };
@@ -401,8 +401,8 @@ int main(int argc, char** argv) {
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
 	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Pregrasp_AlexNet/solver.prototxt",
-	//	"--weights=Pregrasp_AlexNet/snapshot_1115/Pregrasp_AlexNet_iter_40000.caffemodel", "--gpu=all" };
+	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Pregrasp_AlexNet/solver.prototxt",
+		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 
 	char **argvp;
 	argvp = &targv[0];
