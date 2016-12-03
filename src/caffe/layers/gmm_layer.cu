@@ -92,24 +92,6 @@ void GMMLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		  this->blobs_[1]->gpu_data(), (Dtype)1., top_data);
   }
 
-  //FILE *fp = fopen("z_sigma.txt", "w");
-  //Dtype z_sigma_box[5 * 128];
-  //for (int i = 0; i < 128; i++){
-	 // Dtype tempOut[55];
-	 // cudaMemcpy(tempOut, &top_data[55 * i], sizeof(Dtype) * 55, cudaMemcpyDeviceToHost);
-	 // for (int j = 0; j < class_size; j++){
-		//  z_sigma_box[i * 5 + j] = tempOut[11*j + 10];
-		//  fprintf(fp, "%f\n", z_sigma_box[i * 5 + j]);
-	 // }
-	 // fprintf(fp, "\n");
-  //}
-  //fclose(fp);
-  //inner product ÀÌÈÄ Gaussian mixture parameter calculate
-  //0: alpha, 1~x : mu, x+1 : sigma 
-
-  ///////////////////
-  Dtype box[55];
-
   //find alpha max
   kernel_alpha_max<Dtype> << <CAFFE_GET_BLOCKS(batchsize), CAFFE_CUDA_NUM_THREADS >> >(batchsize, data_dim+2, class_size, top_data, maxValue_.mutable_gpu_data());
 
@@ -125,18 +107,6 @@ void GMMLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   //div alpha
   kernel_alpha_div<Dtype> << <CAFFE_GET_BLOCKS(class_size * batchsize), CAFFE_CUDA_NUM_THREADS >> >(class_size * batchsize, data_dim + 2, class_size, maxValue_.gpu_data(), top_data);
 
-  //fp = fopen("sigma.txt", "w");
-  //Dtype sigma_box[5 * 128];
-  //for (int i = 0; i < 128; i++){
-	 // Dtype tempOut[55];
-	 // cudaMemcpy(tempOut, &top_data[55 * i], sizeof(Dtype) * 55, cudaMemcpyDeviceToHost);
-	 // for (int j = 0; j < class_size; j++){
-		//  sigma_box[i * 5 + j] = tempOut[11 * j + 10];
-		//  fprintf(fp, "%f\n", sigma_box[i * 5 + j]);
-	 // }
-	 //fprintf(fp, "\n");
-  //}
-  //fclose(fp);
 }
 
 template <typename Dtype>

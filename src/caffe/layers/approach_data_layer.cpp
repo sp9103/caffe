@@ -40,7 +40,7 @@ namespace caffe {
 
 		std::vector<int> pos_dim(2);
 		pos_dim[0] = batch_size_;
-		pos_dim[1] = 9;
+		pos_dim[1] = 9+10;															//angle : 9 + endeffector_xy : 10
 		top[2]->Reshape(pos_dim);													//[2] Pregrasping postion (label)
 
 		//전체 로드
@@ -102,7 +102,7 @@ namespace caffe {
 
 			caffe_copy(channels_ * height_ * width_, rgbImg.ptr<Dtype>(0), rgb_data);
 			caffe_copy(height_ * width_, depth.ptr<Dtype>(0), depth_data);
-			caffe_copy(9, angMat.ptr<Dtype>(0), ang_data);
+			caffe_copy(19, angMat.ptr<Dtype>(0), ang_data);
 
 			rgb_data += top[0]->offset(1);
 			depth_data += top[1]->offset(1);
@@ -297,9 +297,9 @@ namespace caffe {
 		FILE *fp = fopen(angleFilaPath.c_str(), "r");
 		if (fp == NULL)
 			return;
-		cv::Mat angMat(9, 1, CV_32FC1);
-		float labelBox[9];
-		int angBox[9];
+		cv::Mat angMat(12, 1, CV_32FC1);
+		float labelBox[9+10];
+		int angBox[12];
 		int inv = 1;
 		bool angError = false;
 		for (int i = 0; i < 9; i++){
@@ -317,8 +317,21 @@ namespace caffe {
 			}
 		}
 		if (angError){
+			fclose(fp);
 			return;
 		}
+
+		//endeffector
+		for (int i = 0; i < 2; i++){
+			float temp;
+			fscanf(fp, "%f", &temp);
+			
+			for (int j = 0; j < 5; j++){
+				labelBox[9 + j * 2 + i] = temp;
+				angMat.at<float>(9 + j * 2 + i) = temp / 100.f;
+			}
+		}
+
 		fclose(fp);
 
 		//Depth load

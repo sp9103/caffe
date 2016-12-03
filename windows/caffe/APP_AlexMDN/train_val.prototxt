@@ -13,7 +13,7 @@ layer {
     channels: 3
     height : 250
     width : 400
-    data_path : "E:/Approach_data"
+    data_path : "G:/App_sp"
   }
 }
 layer {
@@ -30,8 +30,8 @@ layer {
     channels: 3
     height : 250
     width : 400
-    data_path : "E:/Approach_data"
-    data_limit : 5000
+    data_path : "G:/App_sp"
+    #data_limit : 5000
 
   }
 }
@@ -654,7 +654,7 @@ layer {
     decay_mult: 0
   }
   gmm_param{
-	data_dim : 9
+	data_dim : 19
 	class_size : 5
   }
   inner_product_param {
@@ -676,7 +676,7 @@ layer{
   top: "distance"
   loss_weight: 1
   gmm_param{
-	data_dim : 9
+	data_dim : 19
 	class_size : 5
   }
   include {
@@ -691,7 +691,7 @@ layer {
   top: "l2_error"
   loss_weight: 1
   gmm_param{
-	data_dim : 9
+	data_dim : 19
 	class_size : 5
           grad_clip : 80;
   }

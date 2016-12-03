@@ -255,8 +255,8 @@ void MDNLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		loop_count = 0;
 
 		Dtype norm_box[5];
-		Dtype diff_box[45], diff_squre_box[45];
-		Dtype bot_box[55], label_box[9];
+		Dtype diff_box[19 * 5], diff_squre_box[19 * 5];
+		Dtype bot_box[21 * 5], label_box[19];
 		Dtype dist_box[5], m_box;
 		Dtype x_box[5], x_m_box[5];
 		Dtype norm;
@@ -264,10 +264,10 @@ void MDNLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		Dtype lossslice;
 
 		for (int i = 0; i < batch_size; i++){
-			cudaMemcpy(diff_box, &diff_.gpu_data()[i * 45], sizeof(Dtype) * 45, cudaMemcpyDeviceToHost);
-			cudaMemcpy(label_box, &label[i * 9], sizeof(Dtype) * 9, cudaMemcpyDeviceToHost);
-			cudaMemcpy(bot_box, &bottom_data[55 * i], sizeof(Dtype) * 55, cudaMemcpyDeviceToHost);
-			cudaMemcpy(diff_squre_box, &diff_square_.gpu_data()[i * 45], sizeof(Dtype) * 45, cudaMemcpyDeviceToHost);
+			cudaMemcpy(diff_box, &diff_.gpu_data()[i * 19 * 5], sizeof(Dtype) * 19 * 5, cudaMemcpyDeviceToHost);
+			cudaMemcpy(label_box, &label[i * 19], sizeof(Dtype) * 19, cudaMemcpyDeviceToHost);
+			cudaMemcpy(bot_box, &bottom_data[21 * 5 * i], sizeof(Dtype) * 21 * 5, cudaMemcpyDeviceToHost);
+			cudaMemcpy(diff_squre_box, &diff_square_.gpu_data()[i * 19 * 5], sizeof(Dtype) * 19 * 5, cudaMemcpyDeviceToHost);
 			cudaMemcpy(norm_box, &diff_norm_.gpu_data()[i * 5], sizeof(Dtype) * 5, cudaMemcpyDeviceToHost);
 			cudaMemcpy(dist_box, &alpha_pi_.gpu_data()[i * 5], sizeof(Dtype) * 5, cudaMemcpyDeviceToHost);
 			cudaMemcpy(&m_box, &max_alpha_pi_.gpu_data()[i], sizeof(Dtype), cudaMemcpyDeviceToHost);
@@ -278,6 +278,15 @@ void MDNLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 
 			if (std::isnan(lossslice) || std::isinf(lossslice)){
 				printf("slice of loss overflow\n");
+
+				//x error ¿œ∂ß
+				Dtype x_calc[5];
+				for (int j = 0; j < 5; j++){
+					const Dtype epsilon = 0.00001;
+					Dtype alpha = bot_box[j*21];
+					Dtype sigma = bot_box[j*21 + 1 + 19];
+					x_calc[j] = log(alpha + epsilon) - 19 / 2 * log(2 * MATH_PI*sigma + epsilon) - norm_box[j] / 2 / sigma;
+				}
 
 				Dtype TotalX[5 * 128];
 				cudaMemcpy(TotalX, x_.gpu_data(), sizeof(Dtype) * 128 * 5, cudaMemcpyDeviceToHost);
@@ -316,12 +325,6 @@ void MDNLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 			kernel_delta_calc<Dtype> << <CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS >> >(bottom[i]->count(),
 				batch_size, class_size, data_dim + 2, data_dim, sigma_min, sigma_max,
 				posterior_pi_.gpu_data(), diff_.gpu_data(), diff_norm_.gpu_data(), bottom_data, bottom_diff);
-
-			//Dtype gradTemp[55];
-			//for (int j = 0; j < batch_size; j++){
-			//	cudaMemcpy(gradTemp, &bottom[i]->mutable_gpu_diff()[j * 55], sizeof(Dtype) * 55, cudaMemcpyDeviceToHost);
-
-			//}
 			
 		}
 	}
