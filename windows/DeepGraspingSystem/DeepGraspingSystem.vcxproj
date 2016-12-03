@@ -41,8 +41,8 @@
     <Import Project="..\CommonSettings.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>D:\Users\Vision Demo\Caffe_RobotTest\Caffe_RobotTest\Caffe_RobotTest\eigen;C:\Users\VisionTeam\Documents\caffe\windows\DeepGraspingSystem\ARMSDK\include;C:\Program Files\Microsoft SDKs\Kinect\v2.0_1409\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\Microsoft SDKs\Kinect\v2.0_1409\Lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Users\Vision Demo\Caffe_RobotTest\Caffe_RobotTest\Caffe_RobotTest\eigen;C:\Users\VisionTeam\Documents\caffe\windows\DeepGraspingSystem\ARMSDK\include;C:\Program Files\Microsoft SDKs\Kinect\v2.0_1409\inc;D:\DynamixelSDK\c++\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files\Microsoft SDKs\Kinect\v2.0_1409\Lib\x64;D:\DynamixelSDK\c++\build\win64\output;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
@@ -55,7 +55,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
-      <AdditionalDependencies>libcaffe.lib;Kinect20.lib;$(CudaDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcaffe.lib;Kinect20.lib;dxl_x64_cpp.lib;$(CudaDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -81,20 +81,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ARMSDKsrc\ARMSDK_Math.cpp" />
-    <ClCompile Include="ARMSDKsrc\MotionEngine\JointData.cpp" />
-    <ClCompile Include="ARMSDKsrc\MotionEngine\Kinematics.cpp" />
-    <ClCompile Include="ARMSDKsrc\MotionEngine\MotionPlay.cpp" />
-    <ClCompile Include="ARMSDKsrc\MotionEngine\RobotInfo.cpp" />
-    <ClCompile Include="ARMSDKsrc\MotionEngine\TrajectoryGenerator.cpp" />
-    <ClCompile Include="ARMSDKsrc\Timer\MotionTimer.cpp" />
     <ClCompile Include="HandTracker\BlobLabeling.cpp" />
     <ClCompile Include="HandTracker\MOGbasedTracker.cpp" />
     <ClCompile Include="Kinect\KinectConnecter.cpp" />
     <ClCompile Include="Kinect\KinectMangerThread.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Robot\DynamixelPro.cpp" />
-    <ClCompile Include="Robot\MX_controller.cpp" />
     <ClCompile Include="Robot\RobotArm.cpp" />
     <ClCompile Include="Robot\RobotManager.cpp" />
   </ItemGroup>
@@ -103,9 +94,6 @@
     <ClInclude Include="HandTracker\MOGbasedTracker.h" />
     <ClInclude Include="Kinect\KinectConnecter.h" />
     <ClInclude Include="Kinect\KinectMangerThread.h" />
-    <ClInclude Include="Robot\dynamixel.h" />
-    <ClInclude Include="Robot\DynamixelPro.h" />
-    <ClInclude Include="Robot\MX_controller.h" />
     <ClInclude Include="Robot\RobotArm.h" />
     <ClInclude Include="Robot\RobotManager.h" />
     <ClInclude Include="stdafx.h" />

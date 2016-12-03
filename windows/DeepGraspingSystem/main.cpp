@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <conio.h>
 #include <caffe\caffe.hpp>
 
 #include "HandTracker\MOGbasedTracker.h"
@@ -7,10 +8,10 @@
 
 #define APPROACH_NET_PATH "..\\caffe\\APP_AlexMDN\\deploy_approach.prototxt"
 //Approach net weight file path
-#define APPROACH_NET_TRAINRESULT "..\\caffe\\APP_AlexMDN\\snapshot\\APP_AlexMDN_iter_33030.caffemodel"
+#define APPROACH_NET_TRAINRESULT "..\\caffe\\APP_AlexMDN\\snapshot\\APP_AlexMDN_iter_70000.caffemodel"
 #define PREGRASP_NET_PATH "..\\caffe\\Pregrasp_AlexNet\\deploy_pregrasp.prototxt"
 //Pregrasp net weight file path
-#define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1118\\Pregrasp_AlexNet_iter_23368.caffemodel"
+#define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1130\\Pregrasp_AlexNet_iter_150000.caffemodel"
 //#define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1115\\Pregrasp_AlexNet_iter_41084.caffemodel"
 
 using namespace caffe;

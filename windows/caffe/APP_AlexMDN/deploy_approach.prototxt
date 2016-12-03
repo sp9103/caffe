@@ -632,7 +632,7 @@ layer {
     decay_mult: 0
   }
   gmm_param{
-	data_dim : 9
+	data_dim : 19
 	class_size : 5
   }
   inner_product_param {

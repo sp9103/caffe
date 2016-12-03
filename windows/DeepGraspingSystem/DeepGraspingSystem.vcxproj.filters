@@ -4,9 +4,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="ARMSDK">
-      <UniqueIdentifier>{6465699f-71f6-42d1-bd2b-22694e5821be}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Robot">
       <UniqueIdentifier>{3c47f987-e3fa-4802-81e8-da08e16a3251}</UniqueIdentifier>
     </Filter>
@@ -18,27 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ARMSDKsrc\ARMSDK_Math.cpp">
-      <Filter>ARMSDK</Filter>
-    </ClCompile>
-    <ClCompile Include="ARMSDKsrc\MotionEngine\JointData.cpp">
-      <Filter>ARMSDK</Filter>
-    </ClCompile>
-    <ClCompile Include="ARMSDKsrc\MotionEngine\Kinematics.cpp">
-      <Filter>ARMSDK</Filter>
-    </ClCompile>
-    <ClCompile Include="ARMSDKsrc\MotionEngine\MotionPlay.cpp">
-      <Filter>ARMSDK</Filter>
-    </ClCompile>
-    <ClCompile Include="ARMSDKsrc\MotionEngine\RobotInfo.cpp">
-      <Filter>ARMSDK</Filter>
-    </ClCompile>
-    <ClCompile Include="ARMSDKsrc\MotionEngine\TrajectoryGenerator.cpp">
-      <Filter>ARMSDK</Filter>
-    </ClCompile>
-    <ClCompile Include="ARMSDKsrc\Timer\MotionTimer.cpp">
-      <Filter>ARMSDK</Filter>
-    </ClCompile>
     <ClCompile Include="Kinect\KinectConnecter.cpp">
       <Filter>Kinect</Filter>
     </ClCompile>
@@ -57,12 +33,6 @@
     <ClCompile Include="Robot\RobotManager.cpp">
       <Filter>Robot</Filter>
     </ClCompile>
-    <ClCompile Include="Robot\DynamixelPro.cpp">
-      <Filter>Robot</Filter>
-    </ClCompile>
-    <ClCompile Include="Robot\MX_controller.cpp">
-      <Filter>Robot</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -79,19 +49,10 @@
     <ClInclude Include="HandTracker\BlobLabeling.h">
       <Filter>HandTracker</Filter>
     </ClInclude>
-    <ClInclude Include="Robot\MX_controller.h">
-      <Filter>Robot</Filter>
-    </ClInclude>
     <ClInclude Include="Robot\RobotArm.h">
       <Filter>Robot</Filter>
     </ClInclude>
     <ClInclude Include="Robot\RobotManager.h">
-      <Filter>Robot</Filter>
-    </ClInclude>
-    <ClInclude Include="Robot\dynamixel.h">
-      <Filter>Robot</Filter>
-    </ClInclude>
-    <ClInclude Include="Robot\DynamixelPro.h">
       <Filter>Robot</Filter>
     </ClInclude>
   </ItemGroup>

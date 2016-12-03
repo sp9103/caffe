@@ -3,13 +3,6 @@
 
 RobotArm::RobotArm(void)
 {
-	sp_.dPacketStartTime = 0;
-	sp_.fByteTransferTime = 0;
-	sp_.fPacketWaitTime = 0;
-	sp_.hComm = 0;
-	sp_.iBusUsing = 0;
-
-	Port_ = &sp_;
 }
 
 
@@ -23,24 +16,46 @@ int RobotArm::Init(int PortNum, int BaudRateNum, int *ID_list){
 	Com_port_num_ = PortNum;
 	Baud_rate_num_ = BaudRateNum;
 
-	if(dxl_initialize(Port_, Com_port_num_, Baud_rate_num_) == COMM_RXSUCCESS )
-		printf("Succeed to open USB2Dynamixel!\n");
+	// Initialize PortHandler instance
+	// Set the port path
+	// Get methods and members of PortHandlerLinux or PortHandlerWindows
+	portHandler = dynamixel::PortHandler::getPortHandler(DEVICENAME);
+	// Initialize PacketHandler instance
+	// Set the protocol version
+	// Get methods and members of Protocol1PacketHandler or Protocol2PacketHandler
+	packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+
+	// Open port
+	if (portHandler->openPort())
+	{
+		printf("Succeeded to open the port!\n");
+	}
 	else
 	{
-		printf( "Failed to open USB2Dynamixel!\n" );
+		printf("Failed to open the port!\n");
+		printf("Press any key to terminate...\n");
 		return -1;
 	}
-#ifdef USING_FINGER
-	fingercontroller_.Init(sp_, fingerID_);
-#endif
-	jointcontroller_.Init(sp_, jointID_);
+
+	// Set port baudrate
+	if (portHandler->setBaudRate(BAUDRATE))
+	{
+		printf("Succeeded to change the baudrate!\n");
+	}
+	else
+	{
+		printf("Failed to change the baudrate!\n");
+		printf("Press any key to terminate...\n");
+		return -1;
+	}
+
 
 	return 1;
 }
 
 int RobotArm::DeInit(){
-
-	dxl_terminate(Port_);
+	// Close port
+	portHandler->closePort();
 
 	return 1;
 }
@@ -57,186 +72,201 @@ int RobotArm::SetID(int *ID_list){
 }
 
 int RobotArm::TorqueOn(){
-#ifdef USING_FINGER
-	fingercontroller_.TorqueOn();
-#endif
-	jointcontroller_.TorqueOn();
+	FingerTorqueOn();
+	for (int i = 0; i < NUM_JOINT; i++){
+		// Enable Dynamixel Torque
+		int dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, jointID_[i], PRO_TORQUE_ENABLE, 1, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
 
 	printf("=================Torque ON====================\n");
 	return 1;
 }
 
 int RobotArm::TorqueOff(){
-#ifdef USING_FINGER
-	fingercontroller_.TorqueOff();
-#endif
-	jointcontroller_.TorqueOff();
+	FingerTorqueOff();
+	for (int i = 0; i < NUM_JOINT; i++){
+		// Enable Dynamixel Torque
+		int dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, jointID_[i], PRO_TORQUE_ENABLE, 0, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
 
 	printf("=================Torque OFF====================\n");
 	return 1;
 }
 
-int RobotArm::GetTemperature(int *Temperature){
-	if(!Temperature){
-		printf("Present Temperature\n");
-		jointcontroller_.GetTemperature();
-#ifdef USING_FINGER
-		fingercontroller_.GetTemperature();
-#endif
-	}else{
-		jointcontroller_.GetTemperature(Temperature);
-#ifdef USING_FINGER
-		fingercontroller_.GetTemperature(&Temperature[NUM_JOINT]);
-#endif
-	}
-
-	return 1;
-}
-
 int RobotArm::isMoving(bool *ismove){
-	if(!ismove){
-		printf("Moving State\n");
-		jointcontroller_.isMoving();
-#ifdef USING_FINGER
-		fingercontroller_.isMoving();
-#endif
-	}else{
-		jointcontroller_.isMoving(ismove);
-#ifdef USING_FINGER
-		fingercontroller_.isMoving(&ismove[NUM_JOINT]);
-#endif
+	isFingerMove(&ismove[NUM_JOINT]);
+	for (int i = 0; i < NUM_JOINT; i++){
+		uint8_t temp;
+		int dxl_comm_result = packetHandler->read1ByteTxRx(portHandler, jointID_[i], PRO_MOVING, &temp, &dxl_error);
+		ismove[i] = temp == 1 ? true : false;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
 	}
 
 	return 1;
 }
 
 int RobotArm::GetPresPosition(int *PresentPosition){
-	if(!PresentPosition){
-		printf("Present position\n");
-		jointcontroller_.GetPresPosition();
-#ifdef USING_FINGER
-		fingercontroller_.GetPresPosition();
-#endif
-	}else{
-		jointcontroller_.GetPresPosition(PresentPosition);
-#ifdef USING_FINGER
-		fingercontroller_.GetPresPosition(&PresentPosition[NUM_JOINT]);
-#endif
-	}
+	GetJointPresPosition(PresentPosition);
+	GetFingerPosition(&PresentPosition[NUM_JOINT]);
 
 	return 1;
 }
 
 int RobotArm::GetGoalPosition(int *GoalPosition){
-	if(!GoalPosition){
-		printf("Goal position\n");
-		jointcontroller_.GetGoalPosition();
-#ifdef USING_FINGER
-		fingercontroller_.GetGoalPosition();
-#endif
-	}else{
-		jointcontroller_.GetGoalPosition(GoalPosition);
-#ifdef USING_FINGER
-		fingercontroller_.GetGoalPosition(&GoalPosition[NUM_JOINT]);
-#endif
+	GetJointGoalPosition(GoalPosition);
+	for (int i = 0; i < NUM_FINGER; i++){
+		uint16_t temp;
+		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, fingerID_[i], PRO_GOAL_POSITION, &temp, &dxl_error);
+		GoalPosition[i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+		}
 	}
 
 	return 1;
 }
 
 int RobotArm::GetPresVelocity(int *PresentVelocity){
-	if(!PresentVelocity){
-		printf("Present velocity\n");
-		jointcontroller_.GetPresVelocity();
-#ifdef USING_FINGER
-		fingercontroller_.GetPresVelocity();
-#endif
-	}else{
-		jointcontroller_.GetPresVelocity(PresentVelocity);
-#ifdef USING_FINGER
-		fingercontroller_.GetPresVelocity(&PresentVelocity[NUM_JOINT]);
-#endif
+	for (int i = 0; i < NUM_JOINT; i++){
+		// Enable Dynamixel Torque
+		uint32_t temp;
+		int dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, jointID_[i], PRO_PRESENT_VELOCITY, &temp, &dxl_error);
+		PresentVelocity[i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
+	for (int i = 0; i < NUM_FINGER; i++){
+		// Enable Dynamixel Torque
+		uint16_t temp;
+		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, jointID_[i], MX_PRESENT_SPEED, &temp, &dxl_error);
+		PresentVelocity[NUM_JOINT + i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
 	}
 
 	return 1;
 }
 int RobotArm::GetGoalVelocity(int *GoalVelocity){
-	if(!GoalVelocity){
-		printf("Goal velocity\n");
-		jointcontroller_.GetGoalVelocity();
-#ifdef USING_FINGER
-		fingercontroller_.GetGoalVelocity();
-#endif
-	}else{
-		jointcontroller_.GetGoalVelocity(GoalVelocity);
-#ifdef USING_FINGER
-		fingercontroller_.GetGoalVelocity(&GoalVelocity[NUM_JOINT]);
-#endif
+	for (int i = 0; i < NUM_JOINT; i++){
+		// Enable Dynamixel Torque
+		uint32_t temp;
+		int dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, jointID_[i], PRO_GOAL_VELOCITY, &temp, &dxl_error);
+		GoalVelocity[i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
+	for (int i = 0; i < NUM_FINGER; i++){
+		// Enable Dynamixel Torque
+		uint16_t temp;
+		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, jointID_[i], MX_MOVING_SPEED, &temp, &dxl_error);
+		GoalVelocity[NUM_JOINT + i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
 	}
 
 	return 1;
 }
 
 int RobotArm::SetGoalVelocity(int *GoalVelocity){
-	if(!jointcontroller_.SetGoalVelocity(GoalVelocity))					return -1;
-#ifdef USING_FINGER
-	if(!fingercontroller_.SetGoalVelocity(&GoalVelocity[NUM_JOINT]))	return -1;
-#endif
+	for (int i = 0; i < NUM_JOINT; i++){
+		// Enable Dynamixel Torque
+		uint32_t temp = (uint32_t)GoalVelocity[i];
+		int dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, jointID_[i], PRO_GOAL_VELOCITY, temp, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
+	for (int i = 0; i < NUM_FINGER; i++){
+		// Enable Dynamixel Torque
+		uint16_t temp = (uint16_t)GoalVelocity[i];
+		int dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, jointID_[i], MX_MOVING_SPEED, temp, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
 
 	return 1;
 }
 
 int RobotArm::SetGoalPosition(int *GoalPosition){
-	if(!jointcontroller_.SetGoalPosition(GoalPosition))					return -1;
-#ifdef USING_FINGER
-	if(!fingercontroller_.SetGoalPosition(&GoalPosition[NUM_JOINT]))	return -1;
-#endif
-
-	return 1;
-}
-
-int RobotArm::SetLED(bool onoff){
-	unsigned char LEDPRO[NUM_JOINT];
-	unsigned char LEDMX[NUM_FINGER];
-
-	unsigned char onoffval = onoff == true ? 255 : 0;
-
-	for(int i = 0; i < NUM_JOINT; i++)
-		LEDPRO[i] = onoffval;
-	for(int i = 0; i < NUM_FINGER; i++)
-		LEDMX[i] = onoffval;
-
-	if(!jointcontroller_.SetLED(LEDPRO))					return -1;
-#ifdef USING_FINGER
-	if(!fingercontroller_.SetLED(LEDMX))					return -1;
-#endif
+	SetJointPosition(GoalPosition);
+	SetFingerPosition(&GoalPosition[NUM_JOINT]);
 
 	return 1;
 }
 
 int RobotArm::GetFingerLoad(int *load){
-#ifdef USING_FINGER
-	if(!load){
-		printf("present Load\n");
-		fingercontroller_.GetPresLoad();
-	}else{
-		//jointcontroller_.GetPresCurrent();
-		fingercontroller_.GetPresLoad(load);
+	for (int i = 0; i < 3; i++){
+		uint16_t temp;
+		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, fingerID_[i], MX_PRESENT_LOAD, &temp, &dxl_error);
+		load[i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
 	}
-#endif
 
 	return 1;
 }
 
 int RobotArm::SetFingerPosition(int *GoalPosition){
-#ifdef USING_FINGER
-	if(!fingercontroller_.SetGoalPosition(GoalPosition))					return -1;
-#endif
+	for (int i = 0; i < NUM_FINGER; i++){
+		// Enable Dynamixel Torque
+		uint16_t temp = (uint16_t)GoalPosition[i];
+		int dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, fingerID_[i], MX_GOAL_POSITION, temp, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
+
 	return 1;
 }
 
 int RobotArm::SetJointPosition(int *GoalPosition){
-	if (!jointcontroller_.SetGoalPosition(GoalPosition))					return -1;
+	for (int i = 0; i < NUM_JOINT; i++){
+		// Enable Dynamixel Torque
+		uint32_t temp = (uint32_t)GoalPosition[i];
+		int dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, jointID_[i], PRO_GOAL_POSITION, temp, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
 
 	return 1;
 }
@@ -255,24 +285,20 @@ int RobotArm::Arm_Get_JointValue(Eigen::VectorXi *value)
 	return 1;
 }
 
-SerialPort* RobotArm::DXL_Get_Port(void)
-{
-	return Port_;
-}
 void RobotArm::safeReleasePose(){
 	int ReleasePose[] = {0,0,0,0,0,0};
 	int presPose[6];
 	int goalPose[6];
 
-	jointcontroller_.GetPresPosition(presPose);
+	GetJointPresPosition(presPose);
 	memcpy(goalPose, presPose, sizeof(int) * 6);
 	goalPose[1] = ReleasePose[1];
-	jointcontroller_.SetGoalPosition(goalPose);
+	SetJointPosition(goalPose);
 	waitMove();
 	goalPose[3] = ReleasePose[3];
-	jointcontroller_.SetGoalPosition(goalPose);
+	SetJointPosition(goalPose);
 	waitMove();
-	jointcontroller_.SetGoalPosition(ReleasePose);
+	SetJointPosition(ReleasePose);
 	waitMove();
 }
 
@@ -280,8 +306,8 @@ bool RobotArm::waitMove(){
 	int presPose[6], goalPose[6];
 
 	while(1){
-		jointcontroller_.GetPresPosition(presPose);
-		jointcontroller_.GetGoalPosition(goalPose);
+		GetJointPresPosition(presPose);
+		GetJointGoalPosition(goalPose);
 		int max = -9999;
 		for(int i = 0; i < 6; i++){
 			int sub = abs(presPose[i] - goalPose[i]);
@@ -297,41 +323,93 @@ bool RobotArm::waitMove(){
 void RobotArm::safeMovePose(int *goal){
 	int presPose[6];
 
-	jointcontroller_.GetPresPosition(presPose);
+	GetJointPresPosition(presPose);
 	presPose[0] = goal[0];
 	presPose[2] = goal[2];
 	presPose[4] = goal[4];
 	presPose[5] = goal[5];
-	jointcontroller_.SetGoalPosition(presPose);
+	SetJointPosition(presPose);
 	waitMove();
 	presPose[3] = goal[3];
-	jointcontroller_.SetGoalPosition(presPose);
+	SetJointPosition(presPose);
 	waitMove();
-	jointcontroller_.SetGoalPosition(goal);
+	SetJointPosition(goal);
 	waitMove();
+}
+
+int RobotArm::GetJointPresPosition(int *PresentPosition){
+	for (int i = 0; i < NUM_JOINT; i++){
+		// Enable Dynamixel Torque
+		uint32_t temp;
+		int dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, jointID_[i], PRO_PRESENT_POSITION, &temp, &dxl_error);
+		PresentPosition[i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+			return -1;
+		}
+	}
 }
 
 void RobotArm::FingerTorqueOn(){
-	fingercontroller_.TorqueOn();
+	for (int i = 0; i < NUM_FINGER; i++){
+		// Enable Dynamixel Torque
+		int dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, fingerID_[i], MX_TORQUE_ENABLE, 1, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+		}
+	}
 }
 
 void RobotArm::FingerTorqueOff(){
-	fingercontroller_.TorqueOff();
+	for (int i = 0; i < NUM_FINGER; i++){
+		// Enable Dynamixel Torque
+		int dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, fingerID_[i], MX_TORQUE_ENABLE, 0, &dxl_error);
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+		}
+	}
 }
 
 int RobotArm::GetFingerPosition(int *presntPosition){
-	fingercontroller_.GetPresPosition(presntPosition);
+	for (int i = 0; i < 3; i++){
+		uint16_t temp;
+		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, fingerID_[i], MX_PRESENT_POSITION, &temp, &dxl_error);
+		presntPosition[i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+		}
+	}
 
 	return 1;
 }
 
 int RobotArm::GetJointGoalPosition(int *GoalPosition){
-	jointcontroller_.GetGoalPosition(GoalPosition);
+	for (int i = 0; i < NUM_JOINT; i++){
+		uint16_t temp;
+		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, jointID_[i], PRO_GOAL_POSITION, &temp, &dxl_error);
+		GoalPosition[i] = (int)temp;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+		}
+	}
 	return 1;
 }
 
 int RobotArm::isFingerMove(bool *ismove){
-	fingercontroller_.isMoving(ismove);
+	for (int i = 0; i < 3; i++){
+		uint8_t temp;
+		int dxl_comm_result = packetHandler->read1ByteTxRx(portHandler, fingerID_[i], MX_MOVING, &temp, &dxl_error);
+		ismove[i] = temp == 1 ? true : false;
+		if (dxl_comm_result != COMM_SUCCESS)
+		{
+			packetHandler->printTxRxResult(dxl_comm_result);
+		}
+	}
 
 	return 1;
 }

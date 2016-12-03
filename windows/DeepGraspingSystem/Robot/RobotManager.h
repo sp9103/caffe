@@ -1,14 +1,6 @@
 #pragma once
-#include "..\ARMSDK\include\ARMSDK.h"
 #include "..\stdafx.h"
 #include "RobotArm.h"
-
-#ifdef _DEBUG
-#pragma comment(lib, "ARMSDKd.lib")
-#endif
-#ifdef NDEBUG
-#pragma comment(lib, "ARMSDK.lib") 
-#endif
 
 class RobotManager
 {
@@ -41,8 +33,6 @@ public:
 private:
 	int FinLimitMotion[2][3];
 
-	armsdk::RobotInfo robot;
-	armsdk::Kinematics kin;
 	RobotArm arm;
 
 	void ControllerInit(int PortNum, int BaudRateNum);
