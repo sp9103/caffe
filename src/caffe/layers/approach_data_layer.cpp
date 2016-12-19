@@ -35,14 +35,14 @@ namespace caffe {
 			"batch_size, channels, height, and width must be specified and"
 			" positive in memory_data_param";
 
-		output_dim_ = 19;
+		output_dim_ = 9;
 
 		top[0]->Reshape(batch_size_, channels_, height_, width_);					//[0] RGB
 		top[1]->Reshape(batch_size_, 1, height_, width_);							//[1] Depth
 
 		std::vector<int> pos_dim(2);
 		pos_dim[0] = batch_size_;
-		pos_dim[1] = output_dim_;															//angle : 9 + endeffector_xy : 10
+		//pos_dim[1] = output_dim_;															//angle : 9
 		top[2]->Reshape(pos_dim);													//[2] Pregrasping postion (label)
 
 		//전체 로드
@@ -299,8 +299,8 @@ namespace caffe {
 		FILE *fp = fopen(angleFilaPath.c_str(), "r");
 		if (fp == NULL)
 			return;
-		cv::Mat angMat(19, 1, CV_32FC1);
-		float labelBox[19];
+		cv::Mat angMat(9, 1, CV_32FC1);
+		float labelBox[9];
 		int angBox[12];
 		int inv = 1;
 		bool angError = false;
@@ -321,23 +321,6 @@ namespace caffe {
 		if (angError){
 			fclose(fp);
 			return;
-		}
-
-		//endeffector
-		/*for (int i = 0; i < 2; i++){
-			float temp;
-			fscanf(fp, "%f", &temp);
-			
-			for (int j = 0; j < 5; j++){
-				labelBox[9 + j * 2 + i] = temp;
-				angMat.at<float>(9 + j * 2 + i) = temp / 100.f;
-			}
-		}*/
-		float temp;
-		fscanf(fp, "%f", &temp);
-		for (int j = 0; j < 10; j++){
-			labelBox[9 + j] = temp;
-			angMat.at<float>(9 + j) = temp / 20.f * inv;
 		}
 
 		fclose(fp);

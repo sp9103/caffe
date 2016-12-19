@@ -50,10 +50,10 @@ void MDNDistLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype MeanDist, presentDist, TotalDist = 0;
   Dtype alpha, alphasum;
   Dtype *diff = new Dtype[data_dim];
-  Dtype ang_diff[14], ang_total[14];
+  Dtype ang_diff[9], ang_total[9];
   //Dtype diff[90];
-  Dtype bot_box[21*5];
-  Dtype label_box[19];
+  Dtype bot_box[11*5];
+  Dtype label_box[9];
 
   int label_dim = bottom[1]->shape()[1];
   int out_dim = (label_dim + 2) * class_size;

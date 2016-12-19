@@ -125,6 +125,7 @@
     <ClCompile Include="..\..\src\caffe\layers\data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\deconv_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\depth_concat_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\depth_spatial_concat_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\dropout_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\dummy_data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\eltwise_layer.cpp" />
@@ -236,6 +237,7 @@
     <ClInclude Include="..\..\include\caffe\layers\data_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\deconv_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\depth_concat_layer.hpp" />
+    <ClInclude Include="..\..\include\caffe\layers\depth_spatial_concat_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\dropout_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\dummy_data_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\eltwise_layer.hpp" />
@@ -379,6 +381,7 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\src\caffe\layers\depth_concat_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\depth_spatial_concat_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\gmm_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\mdn_loss_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\spatial_softmax_layer.cu" />
