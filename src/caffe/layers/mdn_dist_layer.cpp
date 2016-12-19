@@ -42,54 +42,54 @@ void MDNDistLayer<Dtype>::Reshape(
 template <typename Dtype>
 void MDNDistLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  //int count = bottom[0]->count();
-  //int batch_size = bottom[0]->shape()[0];
-  //const Dtype *bottom_data = bottom[0]->cpu_data();
-  //const Dtype *label_data = bottom[1]->cpu_data();
-  //int min_idx = -1;
-  //Dtype MeanDist, presentDist, TotalDist = 0;
-  //Dtype alpha, alphasum;
-  //Dtype *diff = new Dtype[data_dim];
-  //Dtype ang_diff[9], ang_total[9];
-  ////Dtype diff[90];
-  //Dtype bot_box[55];
-  //Dtype label_box[9];
+  int count = bottom[0]->count();
+  int batch_size = bottom[0]->shape()[0];
+  const Dtype *bottom_data = bottom[0]->cpu_data();
+  const Dtype *label_data = bottom[1]->cpu_data();
+  int min_idx = -1;
+  Dtype MeanDist, presentDist, TotalDist = 0;
+  Dtype alpha, alphasum;
+  Dtype *diff = new Dtype[data_dim];
+  Dtype ang_diff[14], ang_total[14];
+  //Dtype diff[90];
+  Dtype bot_box[21*5];
+  Dtype label_box[19];
 
-  //int label_dim = bottom[1]->shape()[1];
-  //int out_dim = (label_dim + 2) * class_size;
+  int label_dim = bottom[1]->shape()[1];
+  int out_dim = (label_dim + 2) * class_size;
 
-  //for (int i = 0; i < data_dim; i++)	ang_total[i] = 0;
-  //for (int i = 0; i < batch_size; i++){
-	 // MeanDist = FLT_MAX;
-	 // //alphasum = 0;
-	 // memcpy(bot_box, &bottom_data[out_dim * i], sizeof(Dtype) * out_dim);
-	 // memcpy(label_box, &label_data[label_dim * i], sizeof(Dtype) * 9);
-	 // for (int j = 0; j < class_size; j++){
-		//  presentDist = 0;
-		//  alpha = bottom_data[i*class_size*(data_dim + 2) + j*(data_dim + 2)];
-		//  //alphasum += alpha;
-		//  for (int k = 0; k < 9; k++){
-		//	  diff[k] = bottom_data[i*class_size*(data_dim + 2) + j*(data_dim + 2) + k + 1] - label_box[k];
-		//	  presentDist += pow(diff[k], 2);
-		//  }
+  for (int i = 0; i < data_dim; i++)	ang_total[i] = 0;
+  for (int i = 0; i < batch_size; i++){
+	  MeanDist = FLT_MAX;
+	  //alphasum = 0;
+	  memcpy(bot_box, &bottom_data[out_dim * i], sizeof(Dtype) * out_dim);
+	  memcpy(label_box, &label_data[label_dim * i], sizeof(Dtype) * label_dim);
+	  for (int j = 0; j < class_size; j++){
+		  presentDist = 0;
+		  alpha = bottom_data[i*class_size*(data_dim + 2) + j*(data_dim + 2)];
+		  //alphasum += alpha;
+		  for (int k = 0; k < 9; k++){
+			  diff[k] = bottom_data[i*class_size*(data_dim + 2) + j*(data_dim + 2) + k + 1] - label_box[k];
+			  presentDist += pow(diff[k], 2);
+		  }
 
-		//  if (MeanDist > presentDist){
-		//	  MeanDist = presentDist;
-		//	  for (int k = 0; k < data_dim; k++)
-		//		  ang_diff[k] = abs(diff[k]);
-		//  }
-	 // }
+		  if (MeanDist > presentDist){
+			  MeanDist = presentDist;
+			  for (int k = 0; k < data_dim; k++)
+				  ang_diff[k] = abs(diff[k]);
+		  }
+	  }
 
-	 // TotalDist += sqrt(MeanDist) / batch_size;
-	 // for (int j = 0; j < data_dim; j++)
-		//  ang_total[j] += ang_diff[j] / batch_size;
-  //}
+	  TotalDist += sqrt(MeanDist) / batch_size;
+	  for (int j = 0; j < data_dim; j++)
+		  ang_total[j] += ang_diff[j] / batch_size;
+  }
 
-   top[0]->mutable_cpu_data()[0] = /*TotalDist*/0;
-   //for (int i = 0; i < 9; i++)
-	  // printf("%.3f ", ang_total[i] * 100.f);
-   //printf("\n");
-   //delete[] diff;
+   top[0]->mutable_cpu_data()[0] = TotalDist/*0*/;
+   for (int i = 0; i < label_dim; i++)
+	   printf("%.3f ", ang_total[i] * 100.f);
+   printf("\n");
+   delete[] diff;
 }
 
 INSTANTIATE_CLASS(MDNDistLayer);

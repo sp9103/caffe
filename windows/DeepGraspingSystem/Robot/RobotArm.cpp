@@ -130,8 +130,8 @@ int RobotArm::GetGoalPosition(int *GoalPosition){
 	GetJointGoalPosition(GoalPosition);
 	for (int i = 0; i < NUM_FINGER; i++){
 		uint16_t temp;
-		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, fingerID_[i], PRO_GOAL_POSITION, &temp, &dxl_error);
-		GoalPosition[i] = (int)temp;
+		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, fingerID_[i], MX_GOAL_POSITION, &temp, &dxl_error);
+		GoalPosition[i + NUM_JOINT] = (int)temp;
 		if (dxl_comm_result != COMM_SUCCESS)
 		{
 			packetHandler->printTxRxResult(dxl_comm_result);
@@ -207,7 +207,7 @@ int RobotArm::SetGoalVelocity(int *GoalVelocity){
 	}
 	for (int i = 0; i < NUM_FINGER; i++){
 		// Enable Dynamixel Torque
-		uint16_t temp = (uint16_t)GoalVelocity[i];
+		uint16_t temp = (uint16_t)GoalVelocity[i + NUM_JOINT];
 		int dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, jointID_[i], MX_MOVING_SPEED, temp, &dxl_error);
 		if (dxl_comm_result != COMM_SUCCESS)
 		{
@@ -259,8 +259,8 @@ int RobotArm::SetFingerPosition(int *GoalPosition){
 int RobotArm::SetJointPosition(int *GoalPosition){
 	for (int i = 0; i < NUM_JOINT; i++){
 		// Enable Dynamixel Torque
-		uint32_t temp = (uint32_t)GoalPosition[i];
-		int dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, jointID_[i], PRO_GOAL_POSITION, temp, &dxl_error);
+		//uint32_t temp = (uint32_t)GoalPosition[i];
+		int dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, jointID_[i], PRO_GOAL_POSITION, GoalPosition[i], &dxl_error);
 		if (dxl_comm_result != COMM_SUCCESS)
 		{
 			packetHandler->printTxRxResult(dxl_comm_result);
@@ -389,8 +389,8 @@ int RobotArm::GetFingerPosition(int *presntPosition){
 
 int RobotArm::GetJointGoalPosition(int *GoalPosition){
 	for (int i = 0; i < NUM_JOINT; i++){
-		uint16_t temp;
-		int dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, jointID_[i], PRO_GOAL_POSITION, &temp, &dxl_error);
+		uint32_t temp;
+		int dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, jointID_[i], PRO_GOAL_POSITION, &temp, &dxl_error);
 		GoalPosition[i] = (int)temp;
 		if (dxl_comm_result != COMM_SUCCESS)
 		{

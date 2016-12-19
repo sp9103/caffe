@@ -68,6 +68,7 @@ namespace caffe {
 		int batch_size_, channels_, height_, width_, size_;
 		int n_;
 		int data_limit_;
+		int output_dim_;
 
 		std::string data_path_;
 

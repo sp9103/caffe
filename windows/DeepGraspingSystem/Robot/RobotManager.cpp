@@ -28,7 +28,7 @@ bool RobotManager::robotConnectCheck(){
 	int presPos[NUM_XEL];
 	//angle min max
 	int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
-	arm.GetPresPosition();
+	arm.GetPresPosition(presPos);
 
 	//¸Æ½Ã¸Ø ¾Þ±Û Ã¼Å© - ¾²·¹±â°ª °É·¯³»±â
 	for (int JointNum = 0; JointNum < 6; JointNum++)
@@ -81,12 +81,12 @@ void RobotManager::Move(int *pos){
 		arm.GetJointGoalPosition(goalPos);*/
 
 		int i = 0;
-		for (i = 0; i < NUM_XEL; i++){
+		for (i = 0; i < NUM_JOINT; i++){
 			if (pos[i] != goalPos[i]){
 				break;
 			}
 		}
-		if (i == NUM_XEL)
+		if (i == NUM_JOINT)
 			break;
 	}
 

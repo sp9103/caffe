@@ -398,10 +398,10 @@ int main(int argc, char** argv) {
 	///////////////////////////////////////////////////////////////////APP_NET////////////////////////////////////////////////////////////////////////////////////////
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
 	//	"--snapshot=APP_AlexMDN/snapshot/APP_AlexMDN_iter_20000.solverstate", "--gpu=all" };
-	/*char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
-		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };*/
 	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
-		"--snapshot=APP_AlexMDN/snapshot/APP_AlexMDN_iter_30000.solverstate", "--gpu=all" };
+		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
+	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_AlexMDN/solver.prototxt",
+	//	"--snapshot=APP_AlexMDN/snapshot/APP_AlexMDN_iter_30000.solverstate", "--gpu=all" };
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Pregrasp_AlexNet/solver.prototxt",
 	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
