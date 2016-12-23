@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "caffe/layers/approach_data_layer.hpp"
+#include "caffe/layers/pretrain_data_layer.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/util/io.hpp"
 
@@ -20,7 +20,7 @@
 namespace caffe {
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+	void PretrainDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
 		const vector<Blob<Dtype>*>& top) {
 		batch_size_ = this->layer_param_.sp_unsupervised_data_param().batch_size();
 		channels_ = this->layer_param_.sp_unsupervised_data_param().channels();
@@ -35,27 +35,26 @@ namespace caffe {
 			"batch_size, channels, height, and width must be specified and"
 			" positive in memory_data_param";
 
-		output_dim_ = 9;
+		output_dim_ = 2;
 
 		top[0]->Reshape(batch_size_, channels_, height_, width_);					//[0] RGB
-		top[1]->Reshape(batch_size_, 1, height_, width_);							//[1] Depth
 
 		std::vector<int> pos_dim(2);
 		pos_dim[0] = batch_size_;
 		pos_dim[1] = output_dim_;															//angle : 9
-		top[2]->Reshape(pos_dim);													//[2] Pregrasping postion (label)
+		top[1]->Reshape(pos_dim);													//[2] Pregrasping postion (label)
 
 		//전체 로드
-		Approach_DataLoadAll(data_path_.c_str());
+		Pretrain_DataLoadAll(data_path_.c_str());
 		CHECK_GT(FileList.size(), 0) << "data is empty";
 
 		//랜덤 박스 생성
 		std::random_shuffle(FileList.begin(), FileList.end());
-		LoadThread = std::thread(&ApproachDataLayer::LoadFuc, this);
+		LoadThread = std::thread(&PretrainDataLayer::LoadFuc, this);
 	}
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::Reset(Dtype* data, Dtype* labels, int n) {
+	void PretrainDataLayer<Dtype>::Reset(Dtype* data, Dtype* labels, int n) {
 		CHECK(data);
 		CHECK(labels);
 		CHECK_EQ(n % batch_size_, 0) << "n must be a multiple of batch size";
@@ -68,32 +67,28 @@ namespace caffe {
 	}
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::set_batch_size(int new_size) {
+	void PretrainDataLayer<Dtype>::set_batch_size(int new_size) {
 		/*CHECK(!has_new_data_) <<
 		"Can't change batch_size until current data has been consumed.";*/
 		batch_size_ = new_size;
 	}
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+	void PretrainDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 		const vector<Blob<Dtype>*>& top) {
 		Dtype* rgb_data = top[0]->mutable_cpu_data();					//[0] RGB
-		Dtype* depth_data = top[1]->mutable_cpu_data();					//[1] Depth
-		Dtype* ang_data = top[2]->mutable_cpu_data();					//[2] ang postion (label)
+		Dtype* pos_data = top[1]->mutable_cpu_data();					//[1] Depth
 
 		for (int i = 0; i < batch_size_; i++){
 			save_mtx.lock();
-			cv::Mat angMat;
+			cv::Mat posMat;
 			cv::Mat	rgbImg;
-			cv::Mat depth;
-			if (ang_blob.size() > 1){
-				angMat = *ang_blob.begin();
+			if (pos_blob.size() > 1){
+				posMat = *pos_blob.begin();
 				rgbImg = *image_blob.begin();
-				depth = *depth_blob.begin();
 
-				ang_blob.pop_front();
+				pos_blob.pop_front();
 				image_blob.pop_front();
-				depth_blob.pop_front();
 			}
 			else{
 				i--;
@@ -103,17 +98,15 @@ namespace caffe {
 			save_mtx.unlock();
 
 			caffe_copy(channels_ * height_ * width_, rgbImg.ptr<Dtype>(0), rgb_data);
-			caffe_copy(height_ * width_, depth.ptr<Dtype>(0), depth_data);
-			caffe_copy(output_dim_, angMat.ptr<Dtype>(0), ang_data);
+			caffe_copy(output_dim_, posMat.ptr<Dtype>(0), pos_data);
 
 			rgb_data += top[0]->offset(1);
-			depth_data += top[1]->offset(1);
-			ang_data += top[2]->offset(1);
+			pos_data += top[1]->offset(1);
 		}
 	}
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::Approach_DataLoadAll(const char* datapath){
+	void PretrainDataLayer<Dtype>::Pretrain_DataLoadAll(const char* datapath){
 		WIN32_FIND_DATA ffd;
 		HANDLE hFind = INVALID_HANDLE_VALUE;
 		TCHAR szDir[MAX_PATH] = { 0, };
@@ -157,7 +150,7 @@ namespace caffe {
 					if (ProcFileName[0] == '.')
 						continue;
 
-					char DepthFile[256], rgbImgFile[256], ApproachPath[256];
+					char rgbImgFile[256], posPath[256];
 					FILE *fp;
 					int filePathLen;
 					//image load
@@ -166,70 +159,27 @@ namespace caffe {
 					rgbImgFile[filePathLen - 1] = '\0';
 					strcat(rgbImgFile, ProcFileName);
 
-					//3.depth 읽어오기
-					sprintf(DepthFile, "%s\\DEPTH\\%s", tBuf, ProcFileName);
-					filePathLen = strlen(DepthFile);
-					DepthFile[filePathLen - 1] = 'n';
-					DepthFile[filePathLen - 2] = 'i';
-					DepthFile[filePathLen - 3] = 'b';
-					strcat(DepthFile, ".bin");
+					//pos load
+					sprintf(posPath, "%s\\ObjPos\\%s", tBuf, ProcFileName);
+					filePathLen = strlen(posPath);
+					posPath[filePathLen - 1] = 't';
+					posPath[filePathLen - 2] = 'x';
+					posPath[filePathLen - 3] = 't';
 
-					HANDLE hApproachFind = INVALID_HANDLE_VALUE;
-					WIN32_FIND_DATA idx_ffd;
-					TCHAR szIdxDir[MAX_PATH] = { 0, };
-					char objName[256];
-					strcpy(objName, ProcFileName);
-					filePathLen = strlen(ProcFileName);
-					objName[filePathLen - 4] = '\0';
-					sprintf(ApproachPath, "%s\\APPROACH\\%s\\PROCIMG\\*", tBuf, objName);
-					MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, ApproachPath, strlen(ApproachPath), szIdxDir, MAX_PATH);
-					hApproachFind = FindFirstFile(szIdxDir, &class_ffd);
+					FilePath tempPath;
+					tempPath.image_path = rgbImgFile;
+					tempPath.pos_path = posPath;
 
-					while (FindNextFile(hApproachFind, &idx_ffd) != 0){
-						//1. Image load
-						char ApproachImg[256];
-						size_t Applen;
-						StringCchLength(idx_ffd.cFileName, MAX_PATH, &Applen);
-						WideCharToMultiByte(CP_ACP, 0, idx_ffd.cFileName, 256, ApproachImg, 256, NULL, NULL);
-
-						if (ApproachImg[0] == '.')
-							continue;
-
-						//image load
-						char appAngleFile[256];
-						sprintf(appAngleFile, "%s\\APPROACH\\%s\\ANGLE\\%s", tBuf, objName, ApproachImg);
-						filePathLen = strlen(appAngleFile);
-						appAngleFile[filePathLen - 1] = 't';
-						appAngleFile[filePathLen - 2] = 'x';
-						appAngleFile[filePathLen - 3] = 't';
-
-						FILE *fp = fopen(appAngleFile, "r");
-						if (fp == NULL)
-							continue;
-						int angle;
-						for (int i = 0; i < 2; i++)
-							fscanf(fp, "%d", &angle);
-						fclose(fp);
-						float fAngle = (float)angle / 251000.f * 180.f;
-						if (abs(fAngle) < 60.f)
-							continue;
-
-						FilePath tempPath;
-						tempPath.image_path = rgbImgFile;
-						tempPath.depth_path = DepthFile;
-						tempPath.ang_path = appAngleFile;
-
-						FileList.push_back(tempPath);
-						if (data_limit_ < FileList.size() && data_limit_ > 0)
-							return;
-					}
+					FileList.push_back(tempPath);
+					if (data_limit_ < FileList.size() && data_limit_ > 0)
+						return;
 				}
 			}
 		}
 	}
 
 	template <typename Dtype>
-	bool ApproachDataLayer<Dtype>::fileTypeCheck(char *fileName){
+	bool PretrainDataLayer<Dtype>::fileTypeCheck(char *fileName){
 		size_t fileLen;
 		fileLen = strlen(fileName);
 
@@ -247,18 +197,18 @@ namespace caffe {
 	}
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::LoadFuc(){
-		const int ThreadLimit = 4000;
+	void PretrainDataLayer<Dtype>::LoadFuc(){
+		const int ThreadLimit = 1000;
 		std::thread FileLoadThread[ThreadLimit];
 		int ThreadIdx = 0, dataidx = 0;
 
 		for (int i = 0; i < ThreadLimit; i++){
 			FilePath srcPath = FileList.at(dataidx++);
-			FileLoadThread[i] = std::thread(&ApproachDataLayer::ReadFuc, this, srcPath);
+			FileLoadThread[i] = std::thread(&PretrainDataLayer::ReadFuc, this, srcPath);
 		}
 
 		while (1){
-			int label_count = ang_blob.size();
+			int label_count = pos_blob.size();
 			if (label_count < ThreadLimit){
 				FilePath srcPath = FileList.at(dataidx++);
 				//불러오기 쓰레드
@@ -266,7 +216,7 @@ namespace caffe {
 					FileLoadThread[ThreadIdx].join();
 				else
 					printf("noting.\n");
-				FileLoadThread[ThreadIdx] = std::thread(&ApproachDataLayer::ReadFuc, this, srcPath);
+				FileLoadThread[ThreadIdx] = std::thread(&PretrainDataLayer::ReadFuc, this, srcPath);
 				ThreadIdx = (ThreadIdx + 1) % ThreadLimit;
 
 				//초과됬을때
@@ -279,9 +229,7 @@ namespace caffe {
 	}
 
 	template <typename Dtype>
-	void ApproachDataLayer<Dtype>::ReadFuc(FilePath src){
-		//angle min max
-		int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
+	void PretrainDataLayer<Dtype>::ReadFuc(FilePath src){
 		//RGB load
 		std::string imageFilaPath = src.image_path;
 		cv::Mat img = cv::imread(imageFilaPath);
@@ -295,57 +243,23 @@ namespace caffe {
 		}
 
 		//Angle load
-		std::string angleFilaPath = src.ang_path;
-		FILE *fp = fopen(angleFilaPath.c_str(), "r");
+		std::string posFilaPath = src.pos_path;
+		FILE *fp = fopen(posFilaPath.c_str(), "r");
 		if (fp == NULL)
 			return;
-		cv::Mat angMat(9, 1, CV_32FC1);
-		float labelBox[9];
-		int angBox[12];
-		int inv = 1;
-		bool angError = false;
-		for (int i = 0; i < 9; i++){
-			fscanf(fp, "%d", &angBox[i]);
-			if (i == 1)
-				if (angBox[i] < 0)
-					inv = -1;
-			if (i > 1)
-				angBox[i] *= inv;
-			angMat.at<float>(i) = (float)angBox[i] / angle_max[i] * 180.f / 100.f;
-			labelBox[i] = angMat.at<float>(i);
-			if (angBox[i] >= 250950 || angBox[i] <= -250950){
-				angError = true;
-				break;
-			}
-		}
-		if (angError){
-			fclose(fp);
-			return;
-		}
-
-		fclose(fp);
-
-		//Depth load
-		std::string depthFilePath = src.depth_path;
-		fp = fopen(depthFilePath.c_str(), "rb");
-		if (fp == NULL)
-			return;
-		int depthwidth, depthheight, depthType;
-		fread(&depthwidth, sizeof(int), 1, fp);
-		fread(&depthheight, sizeof(int), 1, fp);
-		fread(&depthType, sizeof(int), 1, fp);
-		cv::Mat depthMap(depthheight, depthwidth, depthType);
-		for (int i = 0; i < depthMap.rows * depthMap.cols; i++)        fread(&depthMap.at<float>(i), sizeof(float), 1, fp);
+		cv::Mat posMat(output_dim_, 1, CV_32FC1);
+		float labelBox[2];
+		int angBox[2];
+		fscanf(fp, "%f %f\n", &posMat.at<float>(0), &posMat.at<float>(1));
 		fclose(fp);
 
 		save_mtx.lock();
 		image_blob.push_back(tempdataMat);
-		depth_blob.push_back(depthMap);
-		ang_blob.push_back(angMat);
+		pos_blob.push_back(posMat);
 		save_mtx.unlock();
 	}
 
-	INSTANTIATE_CLASS(ApproachDataLayer);
-	REGISTER_LAYER_CLASS(ApproachData);
+	INSTANTIATE_CLASS(PretrainDataLayer);
+	REGISTER_LAYER_CLASS(PretrainData);
 
 }  // namespace caffe

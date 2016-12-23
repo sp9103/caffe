@@ -138,8 +138,8 @@ void SpatialSoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* bottom_data = bottom[0]->gpu_data();
 	//Dtype* bottom_data = bottom[0]->mutable_gpu_data();
   Dtype* top_data = top[0]->mutable_gpu_data();
-  int tWidth = bottom[0]->shape()[2];
-  int tHeight = bottom[0]->shape()[3];
+  int tWidth = bottom[0]->shape()[3];
+  int tHeight = bottom[0]->shape()[2];
 
   /*int sTime = clock();*/
 
@@ -190,42 +190,66 @@ void SpatialSoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   //Feature »Ñ¸®±â
   //////if (bottom->size() == 2){
   if (is_visualize){
-	  cv::Mat FeaturePlot;
+	  //cv::Mat FeaturePlot;
 	  const int drawRow = 10;
-	  const int datatWidth = bottom[1]->shape()[2];
-	  const int dataHeight = bottom[1]->shape()[3];
+	  const int datatWidth = bottom[1]->shape()[3];
+	  const int dataHeight = bottom[1]->shape()[2];
 	  const int dataCount = bottom[1]->shape()[0];
 	  const int softChannel = bottom[0]->shape()[1];
 	  const int topCount = top[0]->shape()[1];
-	  FeaturePlot.create(datatWidth * (dataCount / drawRow + 1), dataHeight * 2 * drawRow, CV_8UC3);
+	  //FeaturePlot.create(dataHeight * 2 * drawRow, datatWidth * (dataCount / drawRow + 1), CV_8UC3);
 	  for (int i = 0; i < dataCount; i++){
 		  int s_row = i * 2 / (drawRow * 2) * datatWidth;
 		  int s_col = i * 2 % (drawRow * 2) * datatWidth;
 
 		  Dtype pos[128];
-		  Dtype *Map = new Dtype[160 * 160 * 3];
-		  cv::Mat SigleFeature(160, 160, CV_8UC3);
+		  Dtype *Map = new Dtype[250 * 400 * 3];
+		  cv::Mat SigleFeature(250, 400, CV_8UC3);
 		  cv::Point pointList[64];
+		  cv::Point2f tempPointList[64];
 
 		  cudaMemcpy(pos, &top[0]->gpu_data()[i * topCount], sizeof(Dtype) * topCount, cudaMemcpyDeviceToHost);
 		  cudaMemcpy(Map, &bottom[1]->gpu_data()[i * datatWidth * dataHeight * 3], sizeof(Dtype) * datatWidth * dataHeight * 3, cudaMemcpyDeviceToHost);
 
-		  for (int i = 0; i < topCount / 2; i++)
-			  pointList[i] = cv::Point(pos[2 * i] * datatWidth, pos[2 * i + 1] * dataHeight);
+		  int softmaxHeight = softmaxResult_.shape()[2];
+		  int softmaxWidth = softmaxResult_.shape()[3];
+		  cv::Mat softMap(softmaxResult_.shape()[2], softmaxResult_.shape()[3], CV_32FC1);
+		  for (int c = 0; c < softChannel; c++){
+			  tempPointList[c].x = tempPointList[c].y = 0;
+			  for (int h = 0; h < softmaxHeight; h++){
+				  for (int w = 0; w < softmaxWidth; w++){
+					  softMap.at<float>(h, w) = softmaxResult_.cpu_data()[c *softmaxHeight * softmaxWidth + h * softmaxWidth + w];
+					  tempPointList[c].x += w * softmaxResult_.cpu_data()[c *softmaxHeight * softmaxWidth + h * softmaxWidth + w];
+					  tempPointList[c].y += h * softmaxResult_.cpu_data()[c *softmaxHeight * softmaxWidth + h * softmaxWidth + w];
+				  }
+			  }
 
+			  tempPointList[c].x = (float)tempPointList[c].x / softmaxWidth * datatWidth;
+			  tempPointList[c].y = (float)tempPointList[c].y / softmaxHeight * dataHeight;
+				
+			  char softName[256];
+			  itoa(c, softName, 10);
+			  //cv::imshow(softName, softMap);
+		  }
+
+		  for (int f = 0; f < topCount / 2; f++){
+			  pointList[f] = cv::Point(pos[2 * f] * datatWidth, pos[2 * f + 1] * dataHeight);
+		  }
 		  for (int h = 0; h < dataHeight; h++){
 			  for (int w = 0; w < datatWidth; w++){
 				  for (int c = 0; c < 3; c++){
 					  SigleFeature.at<cv::Vec3b>(h, w)[c] = uchar(Map[c*dataHeight*datatWidth + datatWidth*h + w] * 255.f);
-					  FeaturePlot.at<cv::Vec3b>(s_row + h, s_col + w)[c] = uchar(Map[c*dataHeight*datatWidth + datatWidth*h + w] * 255.f);
-					  FeaturePlot.at<cv::Vec3b>(s_row + h, s_col + w + datatWidth)[c] = uchar(Map[c*dataHeight*datatWidth + datatWidth*h + w] * 255.f);
+					  //FeaturePlot.at<cv::Vec3b>(s_row + h, s_col + w)[c] = uchar(Map[c*dataHeight*datatWidth + datatWidth*h + w] * 255.f);
+					  //FeaturePlot.at<cv::Vec3b>(s_row + h, s_col + w + datatWidth)[c] = uchar(Map[c*dataHeight*datatWidth + datatWidth*h + w] * 255.f);
 				  }
 			  }
 		  }
 
+		  cv::Mat softmaxTemp = SigleFeature.clone();
+
 		  Dtype softThreshold = 0.0;
-		  const int softwidth = softmaxResult_.shape()[2];
-		  const int softheight = softmaxResult_.shape()[3];
+		  const int softwidth = softmaxResult_.shape()[3];
+		  const int softheight = softmaxResult_.shape()[2];
 		  Dtype *softmap = new Dtype[softwidth * softheight];
 		  for (int j = 0; j < topCount / 2 / 2; j++){
 			  uchar R = (j * 7) % 255;
@@ -239,10 +263,13 @@ void SpatialSoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 					  Max = softmap[s];
 
 			  if (Max > softThreshold){
-				  cv::circle(FeaturePlot, cv::Point(s_col + pointList[j].x, s_row + pointList[j].y), 3, cv::Scalar(B, G, R), -1);
+				 // cv::circle(FeaturePlot, cv::Point(s_col + pointList[j].x, s_row + pointList[j].y), 3, cv::Scalar(B, G, R), -1);
 				  cv::circle(SigleFeature, cv::Point(pointList[j].x, pointList[j].y), 3, cv::Scalar(B, G, R), -1);
 			  }
 		  }
+
+		  cv::imshow("single", SigleFeature);
+		  cv::waitKey(0);
 		  for (int j = topCount / 2 / 2; j < topCount; j++){
 			  uchar R = (j * 7) % 255;
 			  uchar G = (j * 37) % 255;
@@ -254,20 +281,21 @@ void SpatialSoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 				  if (Max < softmap[s])
 					  Max = softmap[s];
 
-			  if (Max > softThreshold)
-				  cv::circle(FeaturePlot, cv::Point(s_col + datatWidth + pointList[j].x, s_row + pointList[j].y), 3, cv::Scalar(B, G, R), -1);
+			  /*if (Max > softThreshold)
+				  cv::circle(FeaturePlot, cv::Point(s_col + datatWidth + pointList[j].x, s_row + pointList[j].y), 3, cv::Scalar(B, G, R), -1);*/
 		  }
 
 		  char buf[256];
 		  sprintf(buf, "%d.bmp", i);
-		  cv::imwrite(buf, SigleFeature);
+		  //cv::imwrite(buf, SigleFeature);
+		  cv::imshow(buf, SigleFeature);
 
 		  delete[] softmap;
 		  delete[] Map;
 	  }
 
-	  cv::imwrite("FeaturePlot.bmp", FeaturePlot);
-	  cv::imshow("Map", FeaturePlot);
+	  //cv::imwrite("FeaturePlot.bmp", FeaturePlot);
+	  //cv::imshow("Map", FeaturePlot);
 	  cv::waitKey(0);
   }
   ////////}

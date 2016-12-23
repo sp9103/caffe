@@ -6,9 +6,9 @@
 #include "Robot\RobotManager.h"
 #include "Kinect\KinectMangerThread.h"
 
-#define APPROACH_NET_PATH "..\\caffe\\APP_AlexMDN\\deploy_approach.prototxt"
+#define APPROACH_NET_PATH "..\\caffe\\APP_Spatial_MDN\\deploy_approach.prototxt"
 //Approach net weight file path
-#define APPROACH_NET_TRAINRESULT "..\\caffe\\APP_AlexMDN\\snapshot\\APP_AlexMDN_iter_37604.caffemodel"
+#define APPROACH_NET_TRAINRESULT "..\\caffe\\APP_Spatial_MDN\\snapshot\\APP_AlexMDN_iter_40000.caffemodel"
 #define PREGRASP_NET_PATH "..\\caffe\\Pregrasp_AlexNet\\deploy_pregrasp.prototxt"
 //Pregrasp net weight file path
 #define PREGRASP_NET_TRAINRESULT "..\\caffe\\Pregrasp_AlexNet\\snapshot_1130\\Pregrasp_AlexNet_iter_150000.caffemodel"
@@ -23,11 +23,6 @@ void depthVis(cv::Mat src, char* windowName);
 float calcMaxDiff(int *src1, int*src2);
 
 int main(){
-	FILE *before_fp = fopen("before.txt", "w");
-	FILE *after_fp = fopen("after.txt", "w");
-	fclose(before_fp);
-	fclose(after_fp);
-
 	//0-1. Kinect Initialize
 	int width = WIDTH;
 	int height = HEIGHT;
@@ -83,25 +78,25 @@ int main(){
 		if (key == 's'){
 
 			////Approaching network
-			//////Mat -> Blob
-			//cv::cvtColor(kinectRGB, kinectRGB, CV_BGRA2BGR);
+			////Mat -> Blob
+			cv::cvtColor(kinectRGB, kinectRGB, CV_BGRA2BGR);
 			cv::Mat caffeRgb;
-			//rgbConvertCaffeType(kinectRGB, &caffeRgb);
-			//memcpy(rgbBlob.mutable_cpu_data(), caffeRgb.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH * CHANNEL);
-			//memcpy(depthBlob.mutable_cpu_data(), kinectDEPTH.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH);
+			rgbConvertCaffeType(kinectRGB, &caffeRgb);
+			memcpy(rgbBlob.mutable_cpu_data(), caffeRgb.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH * CHANNEL);
+			memcpy(depthBlob.mutable_cpu_data(), kinectDEPTH.ptr<float>(0), sizeof(float) * HEIGHT * WIDTH);
 			vector<Blob<float>*> input_vec;				//ют╥б RGB, DEPTH
-			//input_vec.push_back(&rgbBlob);
-			//input_vec.push_back(&depthBlob);
+			input_vec.push_back(&rgbBlob);
+			input_vec.push_back(&depthBlob);
 
-			//////Approaching
-			//const vector<Blob<float>*>& result_approach = approach_net.Forward(input_vec, &loss);
-			//MDNresultToRobotMotion(result_approach, robotMotion);
-			//robot.Approaching(robotMotion);
-			printf("if motion end, press any key\n");
+			////Approaching
+			const vector<Blob<float>*>& result_approach = approach_net.Forward(input_vec, &loss);
+			MDNresultToRobotMotion(result_approach, robotMotion);
+			robot.Approaching(robotMotion);
+			/*printf("if motion end, press any key\n");
 			robot.TorqueOff();
-			printf("End press any key\n");
+			printf("End press any key\n");*/
 			getch();
-			robot.TorqueOn();
+			//robot.TorqueOn();
 
 
 			//Pregrasp
@@ -124,7 +119,7 @@ int main(){
 				input_vec.push_back(&depthBlob);
 				const vector<Blob<float>*>& result_pregrasp = pregrasp_net.Forward(input_vec, &loss);
 				resultToRobotMotion(result_pregrasp, robotMotion);
-				robotMotion[3] += 9000;
+				/*robotMotion[3] += 9000;*/
 				//robotMotion[0] += 9000;
 
 				int presntState[NUM_XEL];
@@ -196,13 +191,13 @@ void resultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst){
 void MDNresultToRobotMotion(const std::vector<caffe::Blob<float>*>& src, int *dst){
 	const int class_size = 5;
 	int angle_max[9] = { 251000, 251000, 251000, 251000, 151875, 151875, 4095, 4095, 4095 };
-	float outputData[21*5];
-	memcpy(outputData, src.at(0)->cpu_data(), sizeof(float) * 21 * 5);
+	float outputData[11*5];
+	memcpy(outputData, src.at(0)->cpu_data(), sizeof(float) * 11 * 5);
 	float alphaMax = -1.f;
 	for (int c = 0; c < 5; c++){
-		float alpha = outputData[21*c];
+		float alpha = outputData[11*c];
 		float tempOutput[21];
-		memcpy(tempOutput, &outputData[21 * c], sizeof(float) * 21);
+		memcpy(tempOutput, &outputData[11 * c], sizeof(float) * 11);
 
 		if (alphaMax < alpha){
 			alphaMax = alpha;

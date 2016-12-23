@@ -6,7 +6,7 @@
 #include "IK_Data_Loader.h"
 //#include "ListLoader.h"
 #include "Approach_Data_Loader.h"
-//#include "Pregrasp_Data_Loader.h"
+#include "Pregrasp_Data_Loader.h"
 //#include "SimulatorControl.h"
 
 #define HEIGHT			250
@@ -56,6 +56,7 @@ cv::Mat depthLoad(char *fileName){
 bool ErrorMaxSort(robotResult first, robotResult second);
 void depthVis(cv::Mat src);
 
+//IK net test¿ë
 //int main(){
 //	//ListLoader TestDataLoader;
 //	//TestDataLoader.LoadDataAll("C:\\TempCaffeDebugData\\list.txt");
@@ -489,10 +490,10 @@ int main(){
 	Blob<float> depthBlob(1, 1, HEIGHT, WIDTH);
 
 	//data load
-	Approach_Data_Loader dataLoader;
-	dataLoader.LoadDataAll("G:\\App_sp");
-	//Pregrasp_Data_Loader dataLoader;
-	//dataLoader.LoadDataAll("M:\\Pregrasp");
+	/*Approach_Data_Loader dataLoader;
+	dataLoader.LoadDataAll("G:\\App_sp");*/
+	Pregrasp_Data_Loader dataLoader;
+	dataLoader.LoadDataAll("M:\\Pregrasp");
 
 	//simulator ±¸µ¿
 	/*SimulatorControl simul;

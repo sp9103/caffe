@@ -160,6 +160,7 @@
     <ClCompile Include="..\..\src\caffe\layers\power_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\pregrasp_data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\prelu_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\pretrain_data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\reduction_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\relu_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\reshape_layer.cpp" />
@@ -272,6 +273,7 @@
     <ClInclude Include="..\..\include\caffe\layers\power_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\pregrasp_data_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\prelu_layer.hpp" />
+    <ClInclude Include="..\..\include\caffe\layers\pretrain_data_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\python_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\reduction_layer.hpp" />
     <ClInclude Include="..\..\include\caffe\layers\relu_layer.hpp" />

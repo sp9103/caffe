@@ -50,7 +50,7 @@ namespace caffe {
 	void DepthSpatialConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		const vector<Blob<Dtype>*>& top) {
 		const int topcount = top[0]->count();
-		const int tWidth = bottom[1]->shape()[1];
+		const int tWidth = bottom[1]->shape()[3];
 		const int tHeight = bottom[1]->shape()[2];
 
 		const Dtype* spatialPos = bottom[0]->gpu_data();						//spatial feature

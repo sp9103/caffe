@@ -1,0 +1,32 @@
+-repository 경로
+*github.com/sp9103
+
+-solution 경로
+../winsows/Caffe.sln
+
+-solution 내부 사용 프로젝트
+libcaffe : caffe library - 모든작업에 항상 있어야함
+caffe : 학습용 - 학습시에만
+*targc는 건드리지말고
+*targv만 바꾸면서 학습하면댐
+5개 인자가 있음
+[1] : 학습시 사용할 프로그램명 - 건드릴필요 없음
+[2] : 사용할 모드 (train , test) - 건드릴필요 없음
+[3] : --solver path , learning rate, weight decay 기본 파라미터 저장파일 경로
+[4] : 사용할 weight. 혹은 solverstate
+[5] : gpu 몇번째꺼 사용할 껀지 혹은 cpu 사용할껀지 - 건드릴 필요없음
+
+CaffeRobotTest
+*IK net 결과 테스트 
+*IK net을 이용해서 label 생성해주기 
+
+DeepGraspingSystem
+*데모용
+
+-학습 구조 및 학습 결과 경로
+../windows/caffe/.
+ex.) C:\Users\VisionTeam\Documents\caffe\windows\caffe\Pregrasp_AlexNet
+train_val.prototxt : 학습시 네트워크
+deploy.prototxt : 시연시 네트워크
+solver.prototxt : 학습 파라미터
+snapshot - solverstate랑 caffemodel

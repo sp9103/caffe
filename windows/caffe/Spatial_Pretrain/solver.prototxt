@@ -1,0 +1,16 @@
+net: "Spatial_Pretrain/train_val.prototxt"
+test_iter: 10
+test_interval: 1000
+test_initialization: true
+
+base_lr: 0.001
+lr_policy: "inv"
+gamma: 0.0001
+power: 0.75
+display: 10
+max_iter: 600000
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 10000
+snapshot_prefix: "Spatial_Pretrain/snapshot/Ptetrain_Net"
+solver_mode: GPU

@@ -9,11 +9,12 @@ layer {
     phase: TRAIN
   }
   sp_unsupervised_data_param {
-    batch_size: 128
+    batch_size: 96
     channels: 3
     height : 250
     width : 400
     data_path : "G:/App_sp"
+    #data_limit : 5000
   }
 }
 layer {
@@ -185,20 +186,21 @@ layer {
   top: "spatial"
   spatial_param{
 	alpha: 4
+          #visualize : true
   }
 }
 layer {
   name: "depth_concat"
-  type: "DepthValueConcat"
+  type: "DepthSpatialConcat"
   bottom: "spatial"
   bottom: "depth"
   top: "Depthconcat"
 }
 layer {
-  name: "fc1"
+  name: "fc1_app"
   type: "InnerProduct"
   bottom: "Depthconcat"
-  top: "fc1"
+  top: "fc1_app"
   param {
     lr_mult: 1
     #decay_mult: 1
@@ -222,10 +224,10 @@ layer {
   }
 }
 layer {
-  name: "bn1"
+  name: "bn1_app"
   type: "BatchNorm"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_app"
+  top: "fc1_app"
   param {
     lr_mult: 0
   }
@@ -237,16 +239,16 @@ layer {
   }
 }
 layer {
-  name: "relu1"
+  name: "relu1_app"
   type: "ReLU"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_app"
+  top: "fc1_app"
 }
 layer {
-  name: "fc2"
+  name: "fc2_app"
   type: "InnerProduct"
-  bottom: "fc1"
-  top: "fc2"
+  bottom: "fc1_app"
+  top: "fc2_app"
   param {
     lr_mult: 1
     #decay_mult: 1
@@ -270,10 +272,10 @@ layer {
   }
 }
 layer {
-  name: "bn2"
+  name: "bn2_app"
   type: "BatchNorm"
-  bottom: "fc2"
-  top: "fc2"
+  bottom: "fc2_app"
+  top: "fc2_app"
   param {
     lr_mult: 0
   }
@@ -285,16 +287,16 @@ layer {
   }
 }
 layer {
-  name: "relu2"
+  name: "relu2_app"
   type: "ReLU"
-  bottom: "fc2"
-  top: "fc2"
+  bottom: "fc2_app"
+  top: "fc2_app"
 }
 layer {
-  name: "fc3"
+  name: "fc3_app"
   type: "InnerProduct"
-  bottom: "fc2"
-  top: "fc3"
+  bottom: "fc2_app"
+  top: "fc3_app"
   param {
     lr_mult: 1
     #decay_mult: 1
@@ -318,10 +320,10 @@ layer {
   }
 }
 layer {
-  name: "bn3"
+  name: "bn3_app"
   type: "BatchNorm"
-  bottom: "fc3"
-  top: "fc3"
+  bottom: "fc3_app"
+  top: "fc3_app"
   param {
     lr_mult: 0
   }
@@ -333,15 +335,15 @@ layer {
   }
 }
 layer {
-  name: "relu3"
+  name: "relu3_app"
   type: "ReLU"
-  bottom: "fc3"
-  top: "fc3"
+  bottom: "fc3_app"
+  top: "fc3_app"
 }
 layer {
   name: "GMM"
   type: "GMM"
-  bottom: "fc3"
+  bottom: "fc3_app"
   top: "GMM"
   param {
     lr_mult: 1

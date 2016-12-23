@@ -407,7 +407,12 @@ int main(int argc, char** argv) {
 	//	"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
 	//////////////////////////////////////////////////////////////////APP_SPATIAL_MDN///////////////////////////////////////////////////////////////////////////////
 	char *targv[5] = { "bin\\caffe.exe", "train", "--solver=APP_Spatial_MDN/solver.prototxt",
-		"--weights=IK_AlexNet/bvlc_alexnet.caffemodel", "--gpu=all" };
+		"--weights=Spatial_Pretrain/snapshot/Ptetrain_Net_iter_24214.caffemodel", "--gpu=all" };
+	//////////////////////////////////////////////////////////////////Pretrain spatial////////////////////////////////////////////////////////////////////////////////
+	/*char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Spatial_Pretrain/solver.prototxt",
+		"--weights=IK_spatial/vision_layer.caffemodel", "--gpu=all" };*/
+	/*char *targv[5] = { "bin\\caffe.exe", "train", "--solver=Spatial_Pretrain/solver.prototxt",
+		"--weights=Spatial_Pretrain/snapshot/Ptetrain_Net_iter_24214.caffemodel", "--gpu=all" };*/
 
 
 	char **argvp;
